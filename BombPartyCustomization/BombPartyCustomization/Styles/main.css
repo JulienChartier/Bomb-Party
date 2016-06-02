@@ -1,0 +1,25 @@
+﻿body
+{
+    background-color:black;
+}
+
+#connectionInfo
+{
+    color:white;
+}
+
+#bombInfo
+{
+    border:dashed;
+    border-color:white;
+    text-align:center;
+    color:orange;
+}
+
+#componentInfo
+{
+    border:dashed;
+    border-color:blue;
+    text-align:left;
+    color:orange;
+}

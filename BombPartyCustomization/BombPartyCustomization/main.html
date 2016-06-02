@@ -1,0 +1,43 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" ng-app="mainApp">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Bomb Visualization</title>
+    <script src="Scripts/jquery-1.6.4.min.js"></script>
+    <script src="Scripts/jquery.signalR-2.2.0.min.js"></script>
+    <script src="Scripts/Constellation-1.8.0.js"></script>
+
+    <script src="Scripts/angular.min.js"></script>
+    <script src="Scripts/ngConstellation-1.8.0.js"></script>
+
+    <script src="Scripts/main.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="Styles/main.css"/>
+</head>
+<body ng-controller="MyController">
+    <p id="connectionInfo">Status: {{(connectionState) ? "Connected" : "Waiting for connection..."}}</p>
+
+    <div ng-show="connectionState">
+        <div id="bombList">
+            <div ng-repeat="(macAddress, bomb) in allBombs" id="bombInfo">
+                <h1>Bomb</h1>
+                <p>Mac Address: {{macAddress}}</p>
+                <p>Signal attenuation : {{bomb.Rssi}} dBm</p>
+                <p>Status : {{bomb.Status}}</p>
+                <p>{{(bomb.Status != "Exploded") ? "Time left : " + formatTime(bomb.TimerInMs) : ""}}</p>
+                <!--<button data-ng-click="selectBomb(bomb)">{{(selectedBomb.MacAddress != macAddress) ? "More" : "Less"}}</button>
+                <div ng-show="selectedBomb.MacAddress == macAddress" id="componentList">
+                    <div ng-repeat="component in selectedBomb.Components" id="componentInfo">
+                        <p>{{component.Name}} : {{component.Status}}</p>
+                    </div>
+                </div>-->
+                <button ng-show="bomb.Status == 'Idle'" ng-click="activateBomb(bomb)">Activate</button>
+                <button ng-show="bomb.Status == 'Idle'" ng-click="editBomb(bomb)">Edit</button>
+                <button ng-show="bomb.Status == 'Activated'" ng-click="pauseBomb(bomb)">Pause</button>
+                <button ng-show="bomb.Status == 'Paused'" ng-click="resumeBomb(bomb)">Resume</button>
+                <button ng-show="(bomb.Status == 'Exploded' || bomb.Status == 'Paused')" ng-click="resetBomb(bomb)">Reset</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

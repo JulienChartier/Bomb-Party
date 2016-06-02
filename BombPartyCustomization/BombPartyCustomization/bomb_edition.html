@@ -1,0 +1,47 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" ng-app="mainApp">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Bomb Customization</title>
+    <script src="Scripts/jquery-1.6.4.min.js"></script>
+    <script src="Scripts/jquery.signalR-2.2.0.min.js"></script>
+    <script src="Scripts/Constellation-1.8.0.js"></script>
+
+    <script src="Scripts/angular.min.js"></script>
+    <script src="Scripts/ngConstellation-1.8.0.js"></script>
+
+    <script src="Scripts/bomb_edition.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="Styles/bomb_edition.css" />
+</head>
+<body ng-controller="MyController">
+    <div id="bombEdition">
+        <h1>Bomb</h1>
+        <div ng-show="selectedBomb.MacAddress == macAddress" id="componentList">
+            <h2>Composants</h2>
+            <p ng-repeat="component in editedBomb.Components" id="componentInfo">{{component.Name}}</p>
+        </div>
+        <div>
+            <h2>Timer</h2>
+            <p><input type="text" value="{{formattedTime}}" ng-model="formattedTime" /> ({{editedBomb.TimerInMs}} ms)</p>
+            <h2>Instructions</h2>
+            <div ng-repeat="instruction in editedBomb.Instructions" id="instructionInfo">
+                <div>
+                    <select>
+                        <option ng-selected="{{component.Name == instruction.Component.Name}}" ng-repeat="component in editedBomb.Components" value="component.Name">{{component.Name}}</option>
+                    </select>
+                    <p>State: {{instruction.Component.State}}</p>
+                    <h4>Durations</h4>
+                    <p>Minimum: <input type="number" ng-model="instruction.MinDuration" min="0" required/> ms</p>
+                    <p>Maximum: <input type="number" ng-model="instruction.MaxDuration" min="0" required/> ms</p>
+
+                    <p ng-show="(instruction.MinDuration <= 0) && (instruction.MaxDuration <= 0)">Anytime</p>
+                    <p ng-show="(instruction.MinDuration <= 0) && (instruction.MaxDuration > 0)">Before {{instruction.MaxDuration / 1000}} seconds</p>
+                    <p ng-show="(instruction.MinDuration > 0) && (instruction.MaxDuration <= 0)">After {{instruction.MinDuration / 1000}} seconds</p>
+                    <p ng-show="(instruction.MinDuration > 0) && (instruction.MaxDuration != 0)">After {{instruction.MinDuration / 1000}} and before {{instruction.MaxDuration / 1000}} seconds</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
