@@ -42,26 +42,25 @@
         </div>
     </nav>
 
-    <div class="container" role="main">
+    <div class="container" role="main" ng-show="connectionState">
         <div id="bombEdition" div class="theme-showcase">
             <div ng-show="selectedBomb.MacAddress == macAddress" id="componentList" class="panel-default">
+                <h1 class="label-success text-center">{{editedBomb.MacAddress}}</h1>
                 <div class="panel-heading">
                     <h2>Components</h2>
                     <div class="panel-body">
                         <table class="table table-striped">
                             <thead>
                                 <tr>
-                                    <th>Interactive</th>
-                                    <th>Decorative</th>
+                                    <th class="label-primary">Interactive</th>
+                                    <th class="label-info">Decorative</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr ng-repeat="name in allInteractiveComponentNames" id="componentInfo"><td>{{name}}</td></tr>
+                                <tr ng-repeat="name in allInteractiveComponentNames" id="componentInfo"><td class="bg-info">{{name}}</td></tr>
                                 <tr ng-repeat="name in allDecorativeComponentNames" id="componentInfo"><td>{{name}}</td></tr>
                             </tbody>
                         </table>
-
-                        <!--<p ng-repeat="component in editedBomb.Components" id="componentInfo">{{component.Name}}</p>-->
                     </div>
                 </div>
             </div>
@@ -71,8 +70,11 @@
             <div class="panel-heading">
                 <h2 class="panel-title">Timer</h2>
             </div>
-            <div class="panel-body">
-                <input type="text" value="{{formattedTime}}" ng-model="formattedTime" /> ({{editedBomb.TimerInMs}} ms)
+            <div class="panel-body text-center">
+                <p><input type="number" maxlength="2" ng-model="formattedTime.hours" ng-change="updateTime()" min="0" max="99"/> :
+                   <input type="number" maxlength="2" ng-model="formattedTime.minutes" ng-change="updateTime()" min="0" max="99" /> :
+                   <input type="number" maxlength="2" ng-model="formattedTime.seconds" ng-change="updateTime()" min="0" max="99" /></p>
+                <label class="label label-info">({{editedBomb.TimerInMs}} ms)</label>
             </div>
         </div>
 
@@ -87,12 +89,12 @@
                     <span ng-show="instruction.Component.State == 'Down'" class="label label-danger">Down</span>
                 </p>
                 <h4>Durations</h4>
-                <p>Minimum: <input type="number" ng-model="instruction.MinDuration" min="0" required /> (ms)
-                   Maximum: <input type="number" ng-model="instruction.MaxDuration" min="0" required /> (ms)</p>
+                <p>Minimum: <input type="number" ng-model="instruction.MinDuration" min="0" ng-change="checkMinDuration(instruction, instruction.MinDuration, {{(instruction.MinDuration == undefined) ? 0 : instruction.MinDuration}})" required /> (ms)
+                   Maximum: <input type="number" ng-model="instruction.MaxDuration" min="0" ng-change="checkMaxDuration(instruction, instruction.MaxDuration, {{(instruction.MaxDuration == undefined) ? 0 : instruction.MaxDuration}})" placeholder="0" required/> (ms)</p>
                 <p ng-show="(instruction.MinDuration <= 0) && (instruction.MaxDuration <= 0)">Anytime</p>
-                <p ng-show="(instruction.MinDuration <= 0) && (instruction.MaxDuration > 0)">Before {{instruction.MaxDuration / 1000}} seconds</p>
-                <p ng-show="(instruction.MinDuration > 0) && (instruction.MaxDuration <= 0)">After {{instruction.MinDuration / 1000}} seconds</p>
-                <p ng-show="(instruction.MinDuration > 0) && (instruction.MaxDuration != 0)">After {{instruction.MinDuration / 1000}} and before {{instruction.MaxDuration / 1000}} seconds</p>
+                <p ng-show="(instruction.MinDuration <= 0) && (instruction.MaxDuration > 0)">Before {{instruction.MaxDuration / 1000}} second(s)</p>
+                <p ng-show="(instruction.MinDuration > 0) && (instruction.MaxDuration <= 0)">After {{instruction.MinDuration / 1000}} second(s)</p>
+                <p ng-show="(instruction.MinDuration > 0) && (instruction.MaxDuration != 0)">After {{instruction.MinDuration / 1000}} and before {{instruction.MaxDuration / 1000}} second(s)</p>
                 <hr />
                 <button type="button" class="btn btn-lg btn-primary" ng-click="addNewInstruction($index+1)">+</button>
                 <button type="button" class="btn btn-lg btn-primary" ng-click="removeInstruction($index)">-</button>
@@ -103,6 +105,10 @@
             <button type="button" class="btn btn-lg btn-primary" ng-click="saveEditedBomb()">Confirm</button>
             <button type="button" class="btn btn-lg btn-primary" ng-click="resetEditedBomb()">Cancel</button>
         </div>
+    </div>
+
+    <div ng-hide="connectionState">
+        <p>Waiting for connection...</p>
     </div>
 </body>
 </html>

@@ -5,6 +5,7 @@
 
                 constellation.intializeClient("http://localhost:8088",
                                                "630547c1fada14c61e876be55ac877e13f5c03d7", "BombPartyUI");
+
                 constellation.onConnectionStateChanged(function (change) {
                     $scope.$apply(function () {
                         $scope.connectionState = (change.newState === $.signalR.connectionState.connected);

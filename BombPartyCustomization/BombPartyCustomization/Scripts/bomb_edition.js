@@ -2,26 +2,51 @@
        .controller("MyController", ["$scope", "constellationConsumer",
            function ($scope, constellation)
            {
+               $scope.connectionState = false;
+               // NOTE: Find a way to pass constellation around?
+               constellation.intializeClient("http://localhost:8088",
+                                               "630547c1fada14c61e876be55ac877e13f5c03d7", "BombPartyUI");
+
+               constellation.onConnectionStateChanged(function (change) {
+                   $scope.$apply(function () {
+                       $scope.connectionState = (change.newState === $.signalR.connectionState.connected);
+                   });
+
+                   if ($scope.connectionState == true) {
+                       //constellation.requestSubscribeStateObjects("*", "Bombi", "*", "*");
+                   }
+               });
+
+               constellation.connect();
+
                $scope.editedBomb = JSON.parse(localStorage.getItem("editedBomb"));
-               console.log($scope.editedBomb);
                $scope.allBombComponents = $scope.editedBomb.Components;
 
                $scope.formatTime = formatTime;
-               $scope.formattedTime = $scope.formatTime($scope.editedBomb.TimerInMs);
-               $scope.$watch("formattedTime", function (value)
+               var formattedTime = $scope.formatTime($scope.editedBomb.TimerInMs);
+               var values = formattedTime.split(":");
+
+               $scope.formattedTime = { hours: parseInt(values[0]), minutes: parseInt(values[1]), seconds: parseInt(values[2]) };
+
+               $scope.updateTime = function()
                {
-                   var values = value.split(":");
                    var factor = 1000;
                    var result = 0;
+                   var field = ["seconds", "minutes", "hours"];
 
-                   for (var i = values.length - 1; i >= 0; --i)
+                   for (var i in field)
                    {
-                       result += factor * values[i];
+                       var value = $scope.formattedTime[field[i]];
+
+                       value = (value == undefined) ? 0 : value;
+                       $scope.formattedTime[field[i]] = value;
+                       
+                       result += factor * value;
                        factor *= 60;
                    }
 
                    $scope.editedBomb.TimerInMs = result;
-               });
+               };
 
                $scope.allInteractiveComponentNames = [];
                $scope.allDecorativeComponentNames = [];
@@ -47,7 +72,38 @@
                    }
                }
 
-               $scope.init();
+               $scope.checkMinDuration = function(instruction, value, oldValue)
+               {
+                   value = (value == undefined) ? 0 : value;
+                   oldValue = (oldValue == undefined) ? 0 : oldValue;
+                   instruction.MinDuration = (instruction.MinDuration == undefined) ? 0 : instruction.MinDuration;
+                   instruction.MaxDuration = (instruction.MaxDuration == undefined) ? 0 : instruction.MaxDuration;
+
+                   if ((instruction.MaxDuration != 0) && (instruction.MaxDuration < value))
+                   {
+                       instruction.MinDuration = instruction.MaxDuration;
+                   }
+               }
+
+               $scope.checkMaxDuration = function(instruction, value, oldValue)
+               {
+                   value = (value == undefined) ? 0 : value;
+                   oldValue = (oldValue == undefined) ? 0 : oldValue;
+                   instruction.MinDuration = (instruction.MinDuration == undefined) ? 0 : instruction.MinDuration;
+                   instruction.MaxDuration = (instruction.MaxDuration == undefined) ? 0 : instruction.MaxDuration;
+
+                   if ((instruction.MinDuration != 0) && (instruction.MinDuration > value))
+                   {
+                       if (oldValue < value)
+                       {
+                           instruction.MaxDuration = instruction.MinDuration;
+                       }
+                       else
+                       {
+                           instruction.MaxDuration = 0;
+                       }
+                   }
+               }
 
                $scope.invertState = function(state)
                {
@@ -134,11 +190,11 @@
                    $scope.init();
 
                    localStorage.setItem("editedBomb", JSON.stringify($scope.editedBomb));
-                   // constellation.sendMessage({ Scope: 'Package', Args: ['BombPartyServer'] }, 'ConfigureBomb', {
-                   //                                                                                               MacAddress: editedBomb.MacAddress,
-                   //                                                                                               Instructions: editedBomb.Instructions,
-                   //                                                                                               Time: editedBomb.TimerInMs
-                   //                                                                                             }); 
+
+                   constellation.sendMessage({ Scope: 'Package', Args: ['BombPartyServer'] }, 'ConfigureBomb',
+                                             [$scope.editedBomb.MacAddress, $scope.editedBomb.TimerInMs, $scope.editedBomb.Instructions]);
+
+                   window.location = "/main.html";
                }
 
                $scope.resetEditedBomb = function()
@@ -146,6 +202,8 @@
                    $scope.editedBomb = JSON.parse(localStorage.getItem("editedBomb"));
                    $scope.init();
                }
+
+               $scope.init();
            }
        ]);
 

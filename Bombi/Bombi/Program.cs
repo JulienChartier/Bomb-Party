@@ -151,6 +151,14 @@ namespace Bombi
                         this.Status = "Idle";
                         break;
                     }
+                case "BombConfiguration":
+                    {
+                        this.TimerInMs = e.StateObject.DynamicValue.Configuration.TimeInMs;
+                        this.Instructions.Clear();
+
+                        this.Instructions.AddRange(e.StateObject.DynamicValue.Configuration.AllInstructions);
+                        break;
+                    }
                 default:
                     break;
             }
