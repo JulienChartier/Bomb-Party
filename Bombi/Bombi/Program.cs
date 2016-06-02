@@ -46,21 +46,21 @@ namespace Bombi
             {
                 Name = "Right_Button",
                 Type = "Button",
-                State = "Up"
+                State = "Down"
             });
 
             this.Components.Add(new
             {
                 Name = "Left_Button",
                 Type = "Button",
-                State = "Up"
+                State = "Down"
             });
 
             this.Components.Add(new
             {
                 Name = "Up_Button",
                 Type = "Button",
-                State = "Up"
+                State = "Down"
             });
 
             this.Instructions.Add(new

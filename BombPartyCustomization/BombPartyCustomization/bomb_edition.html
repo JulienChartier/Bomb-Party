@@ -43,19 +43,21 @@
     </nav>
 
     <div class="container" role="main">
-        <div id="bombEdition" div class="container theme-showcase">
+        <div id="bombEdition" div class="theme-showcase">
             <div ng-show="selectedBomb.MacAddress == macAddress" id="componentList" class="panel-default">
                 <div class="panel-heading">
-                    <h2>Composants</h2>
+                    <h2>Components</h2>
                     <div class="panel-body">
                         <table class="table table-striped">
                             <thead>
                                 <tr>
-                                    <th>Liste des composants :</th>
+                                    <th>Interactive</th>
+                                    <th>Decorative</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr ng-repeat="component in editedBomb.Components" id="componentInfo"><td>{{component.Name}}</td></tr>
+                                <tr ng-repeat="name in allInteractiveComponentNames" id="componentInfo"><td>{{name}}</td></tr>
+                                <tr ng-repeat="name in allDecorativeComponentNames" id="componentInfo"><td>{{name}}</td></tr>
                             </tbody>
                         </table>
 
@@ -74,33 +76,33 @@
             </div>
         </div>
 
-
         <div class="panel panel-primary">
             <div class="panel-heading">
                 <h2 class="panel-title">Instructions <span class="badge"></span></h2>
             </div>
-            <div ng-repeat="instruction in editedBomb.Instructions" id="instructionInfo" class="panel-body">
+            <div ng-repeat="instruction in editedBomb.Instructions track by $index" id="instructionInfo" class="panel-body">
                 <p>
-                    <select>
-                        <option ng-selected="{{component.Name == instruction.Component.Name}}" ng-repeat="component in editedBomb.Components" value="component.Name">{{component.Name}}</option>
-                    </select>
-                    Current state :
+                    <select ng-model="instruction.Component.Name" ng-options="name for name in allInteractiveComponentNames" ng-change="updateAllInstructionsAfterIndex($index, instruction.Component.Name)"></select>
                     <span ng-show="instruction.Component.State == 'Up'" class="label label-success">Up</span>
                     <span ng-show="instruction.Component.State == 'Down'" class="label label-danger">Down</span>
                 </p>
                 <h4>Durations</h4>
-                <p>Minimum: <input type="number" ng-model="instruction.MinDuration" min="0" required /> ms</p>
-                <p>Maximum: <input type="number" ng-model="instruction.MaxDuration" min="0" required /> ms</p>
+                <p>Minimum: <input type="number" ng-model="instruction.MinDuration" min="0" required /> (ms)
+                   Maximum: <input type="number" ng-model="instruction.MaxDuration" min="0" required /> (ms)</p>
                 <p ng-show="(instruction.MinDuration <= 0) && (instruction.MaxDuration <= 0)">Anytime</p>
                 <p ng-show="(instruction.MinDuration <= 0) && (instruction.MaxDuration > 0)">Before {{instruction.MaxDuration / 1000}} seconds</p>
                 <p ng-show="(instruction.MinDuration > 0) && (instruction.MaxDuration <= 0)">After {{instruction.MinDuration / 1000}} seconds</p>
                 <p ng-show="(instruction.MinDuration > 0) && (instruction.MaxDuration != 0)">After {{instruction.MinDuration / 1000}} and before {{instruction.MaxDuration / 1000}} seconds</p>
                 <hr />
+                <button type="button" class="btn btn-lg btn-primary" ng-click="addNewInstruction($index+1)">+</button>
+                <button type="button" class="btn btn-lg btn-primary" ng-click="removeInstruction($index)">-</button>
             </div>
-            <button type="button" class="btn btn-lg btn-primary">+</button>
-            <button type="button" class="btn btn-lg btn-primary">-</button>
+        </div>
+
+        <div class="text-center">
+            <button type="button" class="btn btn-lg btn-primary" ng-click="saveEditedBomb()">Confirm</button>
+            <button type="button" class="btn btn-lg btn-primary" ng-click="resetEditedBomb()">Cancel</button>
         </div>
     </div>
-
 </body>
 </html>
