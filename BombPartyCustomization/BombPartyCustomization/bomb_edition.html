@@ -2,46 +2,105 @@
 <html xmlns="http://www.w3.org/1999/xhtml" ng-app="mainApp">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Bomb Customization</title>
-    <script src="Scripts/jquery-1.6.4.min.js"></script>
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- Bootstrap core CSS -->
+    <link href="Content/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="Styles/bomb_edition.css">
+
+    <script src="Scripts/jquery-1.9.1.min.js"></script>
     <script src="Scripts/jquery.signalR-2.2.0.min.js"></script>
     <script src="Scripts/Constellation-1.8.0.js"></script>
-
     <script src="Scripts/angular.min.js"></script>
     <script src="Scripts/ngConstellation-1.8.0.js"></script>
-
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script src="Scripts/bomb_edition.js"></script>
-
-    <link rel="stylesheet" type="text/css" href="Styles/bomb_edition.css" />
+    <script src="Scripts/bootstrap.min.js"></script>
 </head>
 <body ng-controller="MyController">
-    <div id="bombEdition">
-        <h1>Bomb</h1>
-        <div ng-show="selectedBomb.MacAddress == macAddress" id="componentList">
-            <h2>Composants</h2>
-            <p ng-repeat="component in editedBomb.Components" id="componentInfo">{{component.Name}}</p>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">Bomb</a>
+            </div>
+            <div id="navbar" class="collapse navbar-collapse">
+                <ul class="nav navbar-nav">
+                    <li class="active"><a href="#">Home</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </div>
         </div>
-        <div>
-            <h2>Timer</h2>
-            <p><input type="text" value="{{formattedTime}}" ng-model="formattedTime" /> ({{editedBomb.TimerInMs}} ms)</p>
-            <h2>Instructions</h2>
-            <div ng-repeat="instruction in editedBomb.Instructions" id="instructionInfo">
-                <div>
-                    <select>
-                        <option ng-selected="{{component.Name == instruction.Component.Name}}" ng-repeat="component in editedBomb.Components" value="component.Name">{{component.Name}}</option>
-                    </select>
-                    <p>State: {{instruction.Component.State}}</p>
-                    <h4>Durations</h4>
-                    <p>Minimum: <input type="number" ng-model="instruction.MinDuration" min="0" required/> ms</p>
-                    <p>Maximum: <input type="number" ng-model="instruction.MaxDuration" min="0" required/> ms</p>
+    </nav>
 
-                    <p ng-show="(instruction.MinDuration <= 0) && (instruction.MaxDuration <= 0)">Anytime</p>
-                    <p ng-show="(instruction.MinDuration <= 0) && (instruction.MaxDuration > 0)">Before {{instruction.MaxDuration / 1000}} seconds</p>
-                    <p ng-show="(instruction.MinDuration > 0) && (instruction.MaxDuration <= 0)">After {{instruction.MinDuration / 1000}} seconds</p>
-                    <p ng-show="(instruction.MinDuration > 0) && (instruction.MaxDuration != 0)">After {{instruction.MinDuration / 1000}} and before {{instruction.MaxDuration / 1000}} seconds</p>
+    <div class="container" role="main">
+        <div id="bombEdition" div class="container theme-showcase">
+            <div ng-show="selectedBomb.MacAddress == macAddress" id="componentList" class="panel-default">
+                <div class="panel-heading">
+                    <h2>Composants</h2>
+                    <div class="panel-body">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Liste des composants :</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="component in editedBomb.Components" id="componentInfo"><td>{{component.Name}}</td></tr>
+                            </tbody>
+                        </table>
+
+                        <!--<p ng-repeat="component in editedBomb.Components" id="componentInfo">{{component.Name}}</p>-->
+                    </div>
                 </div>
             </div>
         </div>
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h2 class="panel-title">Timer</h2>
+            </div>
+            <div class="panel-body">
+                <input type="text" value="{{formattedTime}}" ng-model="formattedTime" /> ({{editedBomb.TimerInMs}} ms)
+            </div>
+        </div>
+
+
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h2 class="panel-title">Instructions <span class="badge"></span></h2>
+            </div>
+            <div ng-repeat="instruction in editedBomb.Instructions" id="instructionInfo" class="panel-body">
+                <p>
+                    <select>
+                        <option ng-selected="{{component.Name == instruction.Component.Name}}" ng-repeat="component in editedBomb.Components" value="component.Name">{{component.Name}}</option>
+                    </select>
+                    Current state :
+                    <span ng-show="instruction.Component.State == 'Up'" class="label label-success">Up</span>
+                    <span ng-show="instruction.Component.State == 'Down'" class="label label-danger">Down</span>
+                </p>
+                <h4>Durations</h4>
+                <p>Minimum: <input type="number" ng-model="instruction.MinDuration" min="0" required /> ms</p>
+                <p>Maximum: <input type="number" ng-model="instruction.MaxDuration" min="0" required /> ms</p>
+                <p ng-show="(instruction.MinDuration <= 0) && (instruction.MaxDuration <= 0)">Anytime</p>
+                <p ng-show="(instruction.MinDuration <= 0) && (instruction.MaxDuration > 0)">Before {{instruction.MaxDuration / 1000}} seconds</p>
+                <p ng-show="(instruction.MinDuration > 0) && (instruction.MaxDuration <= 0)">After {{instruction.MinDuration / 1000}} seconds</p>
+                <p ng-show="(instruction.MinDuration > 0) && (instruction.MaxDuration != 0)">After {{instruction.MinDuration / 1000}} and before {{instruction.MaxDuration / 1000}} seconds</p>
+                <hr />
+            </div>
+            <button type="button" class="btn btn-lg btn-primary">+</button>
+            <button type="button" class="btn btn-lg btn-primary">-</button>
+        </div>
     </div>
+
 </body>
 </html>
