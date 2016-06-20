@@ -1,6 +1,12 @@
-#define MAX_COMPONENT_COUNT 10
+#include <SPI.h>
+#include <WiFi.h>
+
+#define MAX_COMPONENT_COUNT 100
+#define MAX_COMPONENT_NAME_LENGTH 30
 #define MAX_INSTRUCTION_COUNT 42
+
 #define ARRAY_COUNT(ar) (sizeof((ar))/sizeof((ar)[0]))
+
 #define BUTTON_DOWN HIGH
 #define BUTTON_UP LOW
 
@@ -17,13 +23,22 @@ typedef enum ComponentType
 	COMPONENT_TYPE_BUTTON,
 } ComponentType;
 
+typedef enum BombState
+{
+	BOMB_STATE_IDLE,
+	BOMB_STATE_ACTIVATED,
+	BOMB_STATE_PAUSED,
+	BOMB_STATE_EXPLODED,
+	BOMB_STATE_DEACTIVATED
+} BombState;
+
 typedef struct Component
 {
 	ComponentType type;
 	int pin;
 	int state;
 
-        unsigned long stateDuration;
+	unsigned long stateDuration;
 } Component;
 
 typedef struct Instruction
@@ -31,8 +46,8 @@ typedef struct Instruction
 	int componentIndex;
 	int newState;
 
-        unsigned long minDuration;
-        unsigned long maxDuration;
+	unsigned long minDuration;
+	unsigned long maxDuration;
 } Instruction;
 
 typedef struct Bomb
@@ -40,54 +55,68 @@ typedef struct Bomb
 	Component allComponents[MAX_COMPONENT_COUNT]; // Hard coded.
 	Instruction allInstructions[MAX_INSTRUCTION_COUNT]; // Given by server.
 
-        long timeLeftInMs;
+	long timeLeftInMs;
         
 	int componentCount, instructionCount;
 	int currentInstruction;
 
-        int isActivated;
+	BombState state;
 } Bomb;
 
-unsigned long lastTick; 
+unsigned long lastTick;
+unsigned long totalTime;
 
-Component allComponents[] =
-{
-	Component{COMPONENT_TYPE_LED, 5, LOW},
-	Component{COMPONENT_TYPE_BUTTON, 3, BUTTON_UP},
-	//Component{COMPONENT_TYPE_LED, 3, LOW}
-};
+int componentCount = 0;
+
+Component allComponents[MAX_COMPONENT_COUNT] = {};
+char allComponentNames[MAX_COMPONENT_COUNT][MAX_COMPONENT_NAME_LENGTH] = {};
+
+#define NEW_COMPONENT(type, name, pin, ...) allComponents[componentCount] = Component{COMPONENT_TYPE_##type, pin, __VA_ARGS__};\
+                                            strncpy(allComponentNames[componentCount], #name, MAX_COMPONENT_NAME_LENGTH - 1);  \
+                                            ++componentCount;                                                                  \
+                                            
+#define NEW_LED(name, pin, state) NEW_COMPONENT(LED, name##_LED pin, state)
+
+#define NEW_BUTTON(name, pin) NEW_COMPONENT(BUTTON, name##_BUTTON, pin)
 
 Bomb bomb = Bomb{};
 
 // Could just be an int oldComponentStates[ARRAY_COUNT(allComponents)].
 Bomb oldState = Bomb{};
 
+void clearInstructions()
+{
+    memset(bomb.allInstructions, 0, sizeof(Instruction) * bomb.instructionCount);
+    bomb.instructionCount = 0;
+    bomb.currentInstruction = 0;
+}
+
 int pushInstruction_(struct Instruction instruction)
 {
-        if (bomb.instructionCount < MAX_INSTRUCTION_COUNT)
+	if (bomb.instructionCount < MAX_INSTRUCTION_COUNT)
 	{
 		bomb.allInstructions[bomb.instructionCount] = instruction;
 		++bomb.instructionCount;
 
-                return 1;
+		return 1;
 	}
 
-        return 0;
+	return 0;
 }
 
 #define pushInstruction(componentIndex, state, ...) pushInstruction_(Instruction{componentIndex, state, __VA_ARGS__});
 
 void initBomb()
 {
-        Component *bombComponent = bomb.allComponents,
-                  *component = allComponents;
+	Component *bombComponent = bomb.allComponents,
+		*component = allComponents;
         
-	for (int i = 0; i < ARRAY_COUNT(allComponents); ++i)
+	for (int i = 0; i < componentCount; ++i)
 	{
-                bombComponent->type = component->type;
-                bombComponent->pin = component->pin;
-                bombComponent->state = component->state;
-                bombComponent->stateDuration = 0;
+		bombComponent->type = component->type;
+		bombComponent->pin = component->pin;
+		bombComponent->state = component->state;
+		bombComponent->stateDuration = 0;
                 
 		switch (component->type)
 		{
@@ -108,12 +137,20 @@ void initBomb()
 				break;
 		}
 
-                ++bombComponent;
-                ++component;
+		++bombComponent;
+		++component;
 	}
 
-        bomb.componentCount = ARRAY_COUNT(allComponents);
-        bomb.isActivated = true;
+	bomb.componentCount = componentCount;
+	bomb.state = BOMB_STATE_ACTIVATED;
+
+        bomb.timeLeftInMs = totalTime;
+}
+
+void resetBomb()
+{
+    clearInstructions();
+    initBomb();
 }
 
 // Get differences between current and last state.
@@ -121,53 +158,51 @@ void initBomb()
 // Return -1 if fail, 0 if nothing new, 1 if success.
 int compareBombToOldState(unsigned long timeDelta)
 {
-        Instruction instruction = bomb.allInstructions[bomb.currentInstruction];
-        Component instructionComponent = bomb.allComponents[instruction.componentIndex];
-        
-        Serial.println(instruction.minDuration);
+	Instruction instruction = bomb.allInstructions[bomb.currentInstruction];
+	Component instructionComponent = bomb.allComponents[instruction.componentIndex];
         
 	for (int i = 0; i < bomb.componentCount; ++i)
 	{          
-            Component component = bomb.allComponents[i];
-            bomb.allComponents[i].stateDuration += timeDelta;
+		Component component = bomb.allComponents[i];
+		bomb.allComponents[i].stateDuration += timeDelta;
 
-            if (instructionComponent.pin == component.pin)
-            {
-                int minDurationValid = ((instruction.minDuration == 0) ||
-                                        (component.stateDuration >= instruction.minDuration));
-                int maxDurationValid = ((instruction.maxDuration == 0) ||
-                                        (component.stateDuration <= instruction.maxDuration));
+		if (instructionComponent.pin == component.pin)
+		{
+			int minDurationValid = ((instruction.minDuration == 0) ||
+						(component.stateDuration >= instruction.minDuration));
+			int maxDurationValid = ((instruction.maxDuration == 0) ||
+						(component.stateDuration <= instruction.maxDuration));
                 
-                if (component.state != oldState.allComponents[i].state)
-                {
-                    bomb.allComponents[i].stateDuration = 0;
+			if (component.state != oldState.allComponents[i].state)
+			{
+				bomb.allComponents[i].stateDuration = 0;
                     
-                    if ((component.state == instruction.newState) &&
-                        minDurationValid && maxDurationValid)
-                    {
-                        return 1;  
-                    }
-                    else
-                    {
-                      return -1;
-                    }
-                }
-                else
-                {
-                  if (!maxDurationValid)
-                  {
-                      return -1;  
-                  }
-                }
-            }
-            else
-            {
-              if (component.state != oldState.allComponents[i].state)
-              {
-                  component.stateDuration = 0;
-                  return -1;
-              }
-            }
+				if ((component.state == instruction.newState) &&
+				     minDurationValid && maxDurationValid)
+				{
+					return 1;  
+				}
+				else
+				{
+					return -1;
+				}
+			}
+			else
+			{
+				if (!maxDurationValid)
+				{
+					return -1;  
+				}
+			}
+		}
+		else
+		{
+			if (component.state != oldState.allComponents[i].state)
+			{
+				component.stateDuration = 0;
+				return -1;
+			}
+		}
 	}
 
 	return 0;
@@ -179,92 +214,105 @@ void updateComponentsState()
     
     for(int i = 0; i < bomb.componentCount; ++i)
     {
-      component->state = digitalRead(component->pin);
-      ++component;
+		component->state = digitalRead(component->pin);
+		++component;
     }  
 }
 
 void setup()
 {
-        Serial.begin(9600);
+	Serial.begin(9600);
+        
+        NEW_LED(RED, 5, LOW);
+        NEW_BUTTON(LEFT, 3);
+        NEW_BUTTON(UP, 2);
         
         // This should be in loop with a boolean to indicate when to reset...
-        // Only the connection to constellation should be here.
-	initBomb();
+	// Only the connection to constellation should be here.
+        totalTime = 30000;
+	resetBomb();
 
-        for (int i = 0; i < 10; ++i)
-        {
-            pushInstruction(1, BUTTON_DOWN);
-            pushInstruction(1, BUTTON_UP, 0, 1000);
-        }
+	for (int i = 0; i < 10; ++i)
+	{
+		pushInstruction(1, BUTTON_DOWN);
+		pushInstruction(1, BUTTON_UP, 0, 1000);
+	}
         
-        pushInstruction(1, BUTTON_DOWN, 0, 1000);
-        pushInstruction(1, BUTTON_UP, 1000);
-
-        bomb.timeLeftInMs = 30000;
+	pushInstruction(1, BUTTON_DOWN, 0, 1000);
+	pushInstruction(1, BUTTON_UP, 1000);
 	
-        lastTick = millis();
+	lastTick = millis();
 }
 
 void loop()
 {
-  // Use a State/Status enum instead (Idle, Activated, Paused, Exploded).
-  if (bomb.isActivated)
-  {
-	oldState = bomb;
-
-        updateComponentsState();
+        // onStateObjectReceive...
         
-        unsigned long currentTime = millis(), delta = currentTime - lastTick;
-	bomb.timeLeftInMs -= delta;
-        lastTick = currentTime;
-        
-        Serial.print("Time left: ");
-        Serial.println(bomb.timeLeftInMs / 1000.0f);
-        
-        if (bomb.timeLeftInMs <= 0)
-        {
-          bomb.timeLeftInMs = 0;
-          // explode():
-          Serial.println("TIME OUT!!");
-          digitalWrite(allComponents[0].pin, HIGH);
-          bomb.isActivated = false;
-        }
-        
-	int status = compareBombToOldState(delta);
-
-	switch (status)
+	switch (bomb.state)
 	{
-		case 1:
+		case BOMB_STATE_ACTIVATED:
 		{
-			++bomb.currentInstruction;
+			oldState = bomb;
 
-			if (bomb.currentInstruction == bomb.instructionCount)
+			updateComponentsState();
+        
+			unsigned long currentTime = millis(), delta = currentTime - lastTick;
+			bomb.timeLeftInMs -= delta;
+			lastTick = currentTime;
+        
+			//Serial.print("Time left: ");
+			Serial.println(bomb.timeLeftInMs / 1000.0f);
+        
+			if (bomb.timeLeftInMs <= 0)
 			{
-				// shutdown();
-                                Serial.println("Success!!");
-                                bomb.isActivated = false;
+				bomb.timeLeftInMs = 0;
+				// explode():
+				Serial.println("TIME OUT!!");
+				digitalWrite(allComponents[0].pin, HIGH);
+				bomb.state = BOMB_STATE_EXPLODED;
 			}
-		
-			break;
-		}
+        
+			int state = compareBombToOldState(delta);
 
-		case -1:
-		{
-			// explode():
-                        Serial.println("Fail!!");
-                        digitalWrite(allComponents[0].pin, HIGH);
-                        bomb.isActivated = false;
+			switch (state)
+			{
+				case 1:
+				{
+					++bomb.currentInstruction;
+
+					if (bomb.currentInstruction == bomb.instructionCount)
+					{
+						// shutdown();
+						Serial.println("Success!!");
+						bomb.state = BOMB_STATE_DEACTIVATED;
+					}
+		
+					break;
+				}
+
+				case -1:
+				{
+					// explode():
+					Serial.println("Wrong!!");
+					digitalWrite(allComponents[0].pin, HIGH);
+					//bomb.isActivated = false;
+					break;
+				}
+		
+				default:
+					break;
+			}
+
 			break;
 		}
-		
+  
 		default:
+		{
+			delay(1000);
+    
 			break;
+		}
 	}
-  }
-  else
-  {
-    delay(1000);
-  }
 }
+
 
