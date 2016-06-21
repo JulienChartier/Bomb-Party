@@ -1,6 +1,9 @@
-﻿body
-{
-    background-color:black;
+﻿body {
+  padding-top: 50px;
+}
+.starter-template {
+  padding: 40px 15px;
+  text-align: center;
 }
 
 #connectionInfo
@@ -8,18 +11,13 @@
     color:white;
 }
 
-#bombInfo
+#timer_miaou
 {
-    border:dashed;
-    border-color:white;
-    text-align:center;
-    color:orange;
+    font-family: digitalFont;
+    color: red;
 }
 
-#componentInfo
-{
-    border:dashed;
-    border-color:blue;
-    text-align:left;
-    color:orange;
+@font-face {
+    font-family: digitalFont;
+    src: url('../fonts/digital-7 (mono).ttf');
 }

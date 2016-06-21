@@ -16,7 +16,7 @@
     <script src="Scripts/Constellation-1.8.0.js"></script>
     <script src="Scripts/angular.min.js"></script>
     <script src="Scripts/ngConstellation-1.8.0.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>-->
     <script src="Scripts/bomb_edition.js"></script>
     <script src="Scripts/bootstrap.min.js"></script>
 </head>
@@ -36,7 +36,7 @@
                 <ul class="nav navbar-nav">
                     <li class="active"><a href="#">Home</a></li>
                     <li><a href="#about">About</a></li>
-                    <li><a href="#contact">Contact</a></li>
+                    <li><a href="/main.html">Back</a></li>
                 </ul>
             </div>
         </div>
@@ -44,10 +44,12 @@
 
     <div class="container" role="main" ng-show="connectionState">
         <div id="bombEdition" div class="theme-showcase">
-            <div ng-show="selectedBomb.MacAddress == macAddress" id="componentList" class="panel-default">
-                <h1 class="label-success text-center">{{editedBomb.MacAddress}}</h1>
-                <div class="panel-heading">
-                    <h2>Components</h2>
+            <div ng-show="selectedBomb.MacAddress == macAddress" id="componentList">
+                <h1 class="alert alert-info text-center">{{editedBomb.MacAddress}}</h1>
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h2>Components</h2>
+                    </div>
                     <div class="panel-body">
                         <table class="table table-striped">
                             <thead>
@@ -71,16 +73,18 @@
                 <h2 class="panel-title">Timer</h2>
             </div>
             <div class="panel-body text-center">
-                <p><input type="number" maxlength="2" ng-model="formattedTime.hours" ng-change="updateTime()" min="0" max="99"/> :
-                   <input type="number" maxlength="2" ng-model="formattedTime.minutes" ng-change="updateTime()" min="0" max="99" /> :
-                   <input type="number" maxlength="2" ng-model="formattedTime.seconds" ng-change="updateTime()" min="0" max="99" /></p>
+                <p>
+                    <input type="number" maxlength="2" ng-model="formattedTime.hours" ng-change="updateTime()" min="0" max="99" /> :
+                    <input type="number" maxlength="2" ng-model="formattedTime.minutes" ng-change="updateTime()" min="0" max="99" /> :
+                    <input type="number" maxlength="2" ng-model="formattedTime.seconds" ng-change="updateTime()" min="0" max="99" />
+                </p>
                 <label class="label label-info">({{editedBomb.TimerInMs}} ms)</label>
             </div>
         </div>
 
         <div class="panel panel-primary">
             <div class="panel-heading">
-                <h2 class="panel-title">Instructions <span class="badge"></span></h2>
+                <h2 class="panel-title">Instructions <span class="badge">{{editedBomb.Instructions.length}}</span></h2>
             </div>
             <div ng-repeat="instruction in editedBomb.Instructions track by $index" id="instructionInfo" class="panel-body">
                 <p>
@@ -89,8 +93,10 @@
                     <span ng-show="instruction.Component.State == 'Down'" class="label label-danger">Down</span>
                 </p>
                 <h4>Durations</h4>
-                <p>Minimum: <input type="number" ng-model="instruction.MinDuration" min="0" ng-change="checkMinDuration(instruction, instruction.MinDuration, {{(instruction.MinDuration == undefined) ? 0 : instruction.MinDuration}})" required /> (ms)
-                   Maximum: <input type="number" ng-model="instruction.MaxDuration" min="0" ng-change="checkMaxDuration(instruction, instruction.MaxDuration, {{(instruction.MaxDuration == undefined) ? 0 : instruction.MaxDuration}})" placeholder="0" required/> (ms)</p>
+                <p>
+                    Minimum: <input type="number" ng-model="instruction.MinDuration" min="0" ng-change="checkMinDuration(instruction, instruction.MinDuration, {{(instruction.MinDuration == undefined) ? 0 : instruction.MinDuration}})" required /> (ms)
+                    Maximum: <input type="number" ng-model="instruction.MaxDuration" min="0" ng-change="checkMaxDuration(instruction, instruction.MaxDuration, {{(instruction.MaxDuration == undefined) ? 0 : instruction.MaxDuration}})" placeholder="0" required /> (ms)
+                </p>
                 <p ng-show="(instruction.MinDuration <= 0) && (instruction.MaxDuration <= 0)">Anytime</p>
                 <p ng-show="(instruction.MinDuration <= 0) && (instruction.MaxDuration > 0)">Before {{instruction.MaxDuration / 1000}} second(s)</p>
                 <p ng-show="(instruction.MinDuration > 0) && (instruction.MaxDuration <= 0)">After {{instruction.MinDuration / 1000}} second(s)</p>

@@ -1,7 +1,8 @@
 ﻿<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" ng-app="mainApp">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Bomb Visualization</title>
     <script src="Scripts/jquery-1.9.1.min.js"></script>
     <script src="Scripts/jquery.signalR-2.2.0.min.js"></script>
@@ -12,30 +13,62 @@
 
     <script src="Scripts/main.js"></script>
 
-    <link rel="stylesheet" type="text/css" href="Styles/main.css"/>
+    <link href="Content/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="Styles/main.css">
 </head>
 <body ng-controller="MyController">
-    <p id="connectionInfo">Status: {{(connectionState) ? "Connected" : "Waiting for connection..."}}</p>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">Bomb</a>
+            </div>
+            <div id="navbar" class="collapse navbar-collapse">
+                <ul class="nav navbar-nav">
+                    <li class="active"><a href="#">Home</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <p ng-show="connectionState" class="label label-success" id="connectionInfo">Status: Connected</p>
+    <p ng-hide="connectionState" class="label label-warning" id="connectionInfo">Status: Waiting for connection...</p>
 
     <div ng-show="connectionState">
-        <div id="bombList">
-            <div ng-repeat="(macAddress, bomb) in allBombs" id="bombInfo">
-                <h1>Bomb</h1>
-                <p>Mac Address: {{macAddress}}</p>
-                <p>Signal attenuation : {{bomb.Rssi}} dBm</p>
-                <p>Status : {{bomb.Status}}</p>
-                <p>{{(bomb.Status != "Exploded") ? "Time left : " + formatTime(bomb.TimerInMs) : ""}}</p>
-                <!--<button data-ng-click="selectBomb(bomb)">{{(selectedBomb.MacAddress != macAddress) ? "More" : "Less"}}</button>
-                <div ng-show="selectedBomb.MacAddress == macAddress" id="componentList">
-                    <div ng-repeat="component in selectedBomb.Components" id="componentInfo">
-                        <p>{{component.Name}} : {{component.Status}}</p>
-                    </div>
-                </div>-->
-                <button ng-show="bomb.Status == 'Idle'" ng-click="activateBomb(bomb)">Activate</button>
-                <button ng-show="bomb.Status == 'Idle'" ng-click="editBomb(bomb)">Edit</button>
-                <button ng-show="bomb.Status == 'Activated'" ng-click="pauseBomb(bomb)">Pause</button>
-                <button ng-show="bomb.Status == 'Paused'" ng-click="resumeBomb(bomb)">Resume</button>
-                <button ng-show="(bomb.Status == 'Exploded' || bomb.Status == 'Paused')" ng-click="resetBomb(bomb)">Reset</button>
+        <div id="bombList" class="container">
+            <div ng-repeat="(macAddress, bomb) in allBombs" id="bombInfo" ng-class="{'Activated': 'panel panel-warning', 'Paused': 'panel panel-info', 'Idle':'panel panel-default', 'Exploded': 'panel panel-danger'}[bomb.Status]">
+                <div class="panel-heading text-center">
+                    <p ng-hide="bomb.Status == 'Exploded'">
+                        <h1 id="timer_miaou"><big>{{formatTime(bomb.TimerInMs)}}</big></h1>
+                    </p>
+                </div>
+                <div class="panel-body text-center">
+                    <big>
+                        <p>
+                            <span class="label label-info">Mac Address: {{macAddress}}</span><br />
+                            <span ng-class="{'Activated': 'label label-warning', 'Paused': 'label label-info', 'Idle':'label label-default', 'Exploded': 'label label-danger'}[bomb.Status]">Status: {{bomb.Status}}</span>
+                        </p>
+                    </big>
+                    <!--<button data-ng-click="selectBomb(bomb)">{{(selectedBomb.MacAddress != macAddress) ? "More" : "Less"}}</button>
+                    <div ng-show="selectedBomb.MacAddress == macAddress" id="componentList">
+                        <div ng-repeat="component in selectedBomb.Components" id="componentInfo">
+                            <p>{{component.Name}} : {{component.Status}}</p>
+                        </div>
+                    </div>-->
+
+                    <button class="btn btn-lg btn-default" ng-show="bomb.Status == 'Idle'" ng-click="activateBomb(bomb)">Activate</button>
+                    <button class="btn btn-lg btn-default" ng-show="bomb.Status == 'Idle'" ng-click="editBomb(bomb)">Edit</button>
+                    <button class="btn btn-lg btn-default" ng-show="bomb.Status == 'Activated'" ng-click="pauseBomb(bomb)">Pause</button>
+                    <button class="btn btn-lg btn-default" ng-show="bomb.Status == 'Paused'" ng-click="resumeBomb(bomb)">Resume</button>
+                    <button class="btn btn-lg btn-default" ng-show="(bomb.Status == 'Exploded' || bomb.Status == 'Paused')" ng-click="resetBomb(bomb)">Reset</button>
+                </div>
             </div>
         </div>
     </div>
