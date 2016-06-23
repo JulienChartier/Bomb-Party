@@ -1,7 +1,7 @@
 #include <SPI.h>
 #include <WiFi.h>
-#include <ArduinoJson.h>
 #include <Constellation.h>
+#include <ArduinoJson.h>
 
 WiFiClient wifiClient;
 char* ssid     = "Xion";
@@ -9,7 +9,9 @@ char* password = "xionpassword";
 
 
 /* Create the Constellation connection */
-Constellation constellation(wifiClient, "89.156.77.212", 8088, "ArduinoCard", "*", "*");
+Constellation constellation(wifiClient, "89.156.77.212", 8088, "ArduinoCard", "Bombi", "PUT_ACCESS_KEY_HERE!");
+
+byte mac[6];
 
 #define MAX_COMPONENT_COUNT 12
 #define MAX_COMPONENT_NAME_LENGTH 15
@@ -95,10 +97,13 @@ Bomb bomb = Bomb{};
 // Could just be a char oldComponentStates[MAX_COMPONENT_COUNT].
 Bomb oldState = Bomb{};
 
-void clearInstructions()
+void clearInstructions(char totalClear = false)
 {
+  if (totalClear)
+  {
     memset(bomb.allInstructions, 0, sizeof(Instruction) * bomb.instructionCount);
     bomb.instructionCount = 0;
+  }
     bomb.currentInstruction = 0;
 }
 
@@ -232,9 +237,8 @@ void updateComponentsState()
 
 void setup()
 {
-  Serial.begin(9600);
-
-         Serial.begin(9600);  delay(10);
+         Serial.begin(9600);
+         delay(10);
   
         // Connect to Wifi  
         Serial.print("Connecting to ");
@@ -246,10 +250,15 @@ void setup()
         }
         Serial.println("WiFi connected. IP: ");
         Serial.println(WiFi.localIP());
+        
+        WiFi.macAddress(mac);
   
   // Get sentinel name
         Serial.println(constellation.getSentinelName());
         Serial.println("wololo");
+        
+        constellation.setMessageReceiveCallback(messageReceive);
+        constellation.subscribeToMessage();
         
         NEW_LED(RED_0, 11, HIGH);
         NEW_LED(GREEN_0,12,LOW);
@@ -289,7 +298,6 @@ void setup()
 
 void loop()
 {
-        // onStateObjectReceive...
   switch (bomb.state)
   {
     case BOMB_STATE_ACTIVATED:
@@ -349,11 +357,60 @@ void loop()
   
     default:
     {
-      delay(1000);
+      delay(500);
     
       break;
     }
   }
+  
+  constellation.pollConstellation(400);
+  delay(100);
 }
 
-
+void messageReceive(JsonObject& json)
+{
+    Serial.print("Message received: ");
+    
+    const char *macDestination = json["Data"]["MacAddress"].asString();
+    
+    if (stricmp(macDestination, (const char*) mac) != 0)
+    {
+      return;  
+    }
+    
+    Serial.print("for me, and it's: ");
+    
+    const char *key = json["Key"].asString();
+    
+    Serial.println(key);
+    
+    if (stricmp(key, "ActivateBomb") == 0)
+    {
+       bomb.state = BOMB_STATE_ACTIVATED; 
+    }
+    else if (stricmp(key, "PauseBomb") == 0)
+    {
+       bomb.state = BOMB_STATE_PAUSED; 
+    }
+    else if (stricmp(key, "ResetBomb") == 0)
+    {
+      resetBomb();  
+    }
+    else if (stricmp(key, "ConfigureBomb") == 0)
+    {
+      totalTime = json["Data"]["TimeLeftInMs"].as<long>();
+      
+      JsonArray& instructions = json["Data"]["Instructions"].asArray();
+    
+      clearInstruction(true);
+      
+      for (JsonObject::iterator it = instructions.begin(); it != instructions.end(); ++it)
+      {
+        JsonObject instruction = it->value;
+        pushInstruction(instruction["ComponentIndex"].as<char>(), instruction["State"].as<char>(),
+                        instruction["MinDuration"].as<unsigned long>(), instruction["MaxDuration"]);
+      }
+      
+      resetBomb();
+    }
+}
