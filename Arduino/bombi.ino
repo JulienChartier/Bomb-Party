@@ -1,20 +1,24 @@
 #include <SPI.h>
 #include <WiFi.h>
+#include <ArduinoJson.h>
+#include <Constellation.h>
 
-#define MAX_COMPONENT_COUNT 16
-#define MAX_COMPONENT_NAME_LENGTH 20
-#define MAX_INSTRUCTION_COUNT 42
+WiFiClient wifiClient;
+char* ssid     = "Xion";
+char* password = "xionpassword";
+
+
+/* Create the Constellation connection */
+Constellation constellation(wifiClient, "89.156.77.212", 8088, "ArduinoCard", "*", "*");
+
+#define MAX_COMPONENT_COUNT 12
+#define MAX_COMPONENT_NAME_LENGTH 15
+#define MAX_INSTRUCTION_COUNT 20
 
 #define ARRAY_COUNT(ar) (sizeof((ar))/sizeof((ar)[0]))
 
 #define BUTTON_DOWN HIGH
 #define BUTTON_UP LOW
-
-// NOTE: Instructions example.
-// BUTTON, pin 2, LOW (button pressed)
-// BUTTON, pin 2, HIGH (button released)
-// BUTTON, pin 3, LOW
-// ...
 
 typedef enum ComponentType
 {
@@ -35,16 +39,16 @@ typedef enum BombState
 typedef struct Component
 {
   ComponentType type;
-  int pin;
-  int state;
+  char pin;
+  char state;
 
   unsigned long stateDuration;
 } Component;
 
 typedef struct Instruction
 {
-  int componentIndex;
-  int newState;
+  char componentIndex;
+  char newState;
 
   unsigned long minDuration;
   unsigned long maxDuration;
@@ -57,8 +61,8 @@ typedef struct Bomb
 
   long timeLeftInMs;
         
-  int componentCount, instructionCount;
-  int currentInstruction;
+  char componentCount, instructionCount;
+  char currentInstruction;
 
   BombState state;
 } Bomb;
@@ -66,7 +70,12 @@ typedef struct Bomb
 unsigned long lastTick;
 unsigned long totalTime;
 
-int componentCount = 0;
+char gameSerieZero[4] = {1,3,5,0};
+char gameSerieOne[4] = {1,9,8,0};
+char gameSerieTwo[4] = {0,1,3,0};
+char gameSerieThree[4] = {2,12,14,0};
+
+char componentCount = 0;
 
 Component allComponents[MAX_COMPONENT_COUNT] = {};
 char allComponentNames[MAX_COMPONENT_COUNT][MAX_COMPONENT_NAME_LENGTH] = {};
@@ -83,7 +92,7 @@ char allComponentNames[MAX_COMPONENT_COUNT][MAX_COMPONENT_NAME_LENGTH] = {};
 
 Bomb bomb = Bomb{};
 
-// Could just be an int oldComponentStates[ARRAY_COUNT(allComponents)].
+// Could just be a char oldComponentStates[MAX_COMPONENT_COUNT].
 Bomb oldState = Bomb{};
 
 void clearInstructions()
@@ -93,7 +102,7 @@ void clearInstructions()
     bomb.currentInstruction = 0;
 }
 
-int pushInstruction_(struct Instruction instruction)
+char pushInstruction_(struct Instruction instruction)
 {
   if (bomb.instructionCount < MAX_INSTRUCTION_COUNT)
   {
@@ -119,9 +128,6 @@ void initBomb()
     bombComponent->pin = component->pin;
     bombComponent->state = component->state;
     bombComponent->stateDuration = 0;
-
-    Serial.println("toto");
-    Serial.println(component->state);
                 
     switch (component->type)
     {
@@ -149,7 +155,7 @@ void initBomb()
   bomb.componentCount = componentCount;
   bomb.state = BOMB_STATE_ACTIVATED;
 
-        bomb.timeLeftInMs = totalTime;
+  bomb.timeLeftInMs = totalTime;
 }
 
 void resetBomb()
@@ -161,7 +167,7 @@ void resetBomb()
 // Get differences between current and last state.
 // If the differences are not the ones expected from the instruction, BAD MOVE!
 // Return -1 if fail, 0 if nothing new, 1 if success.
-int compareBombToOldState(unsigned long timeDelta)
+char compareBombToOldState(unsigned long timeDelta)
 {
   Instruction instruction = bomb.allInstructions[bomb.currentInstruction];
   Component instructionComponent = bomb.allComponents[instruction.componentIndex];
@@ -173,9 +179,9 @@ int compareBombToOldState(unsigned long timeDelta)
 
     if (instructionComponent.pin == component.pin)
     {
-      int minDurationValid = ((instruction.minDuration == 0) ||
+      char minDurationValid = ((instruction.minDuration == 0) ||
             (component.stateDuration >= instruction.minDuration));
-      int maxDurationValid = ((instruction.maxDuration == 0) ||
+      char maxDurationValid = ((instruction.maxDuration == 0) ||
             (component.stateDuration <= instruction.maxDuration));
                 
       if (component.state != oldState.allComponents[i].state)
@@ -219,14 +225,31 @@ void updateComponentsState()
     
     for(int i = 0; i < bomb.componentCount; ++i)
     {
-    component->state = digitalRead(component->pin);
-    ++component;
+      component->state = digitalRead(component->pin);
+      ++component;
     }  
 }
 
 void setup()
 {
   Serial.begin(9600);
+
+         Serial.begin(9600);  delay(10);
+  
+        // Connect to Wifi  
+        Serial.print("Connecting to ");
+        Serial.println(ssid);  
+        WiFi.begin(ssid, password);  
+        while (WiFi.status() != WL_CONNECTED) {
+          delay(500);
+          Serial.print(".");
+        }
+        Serial.println("WiFi connected. IP: ");
+        Serial.println(WiFi.localIP());
+  
+  // Get sentinel name
+        Serial.println(constellation.getSentinelName());
+        Serial.println("wololo");
         
         NEW_LED(RED_0, 11, HIGH);
         NEW_LED(GREEN_0,12,LOW);
@@ -255,8 +278,11 @@ void setup()
     pushInstruction(1, BUTTON_UP, 0, 1000);
   }
    */     
-  pushInstruction(2, BUTTON_DOWN, 0, 1000);
-  pushInstruction(2, BUTTON_UP, 1000);
+  pushInstruction(2, BUTTON_DOWN);
+  pushInstruction(2, BUTTON_UP);
+
+  pushInstruction(5, BUTTON_DOWN);
+  pushInstruction(5, BUTTON_UP);
   
   lastTick = millis();
 }
@@ -277,7 +303,7 @@ void loop()
       lastTick = currentTime;
         
       //Serial.print("Time left: ");
-      //Serial.println(bomb.timeLeftInMs / 1000.0f);
+      Serial.println(bomb.timeLeftInMs / 1000.0f);
         
       if (bomb.timeLeftInMs <= 0)
       {
@@ -288,7 +314,7 @@ void loop()
         bomb.state = BOMB_STATE_EXPLODED;
       }
         
-      int state = compareBombToOldState(delta);
+      char state = compareBombToOldState(delta);
 
       switch (state)
       {
@@ -310,8 +336,7 @@ void loop()
         {
           // explode():
           Serial.println("Wrong!!");
-          //digitalWrite(allComponents[0].pin, HIGH);
-          //bomb.isActivated = false;
+          bomb.state = BOMB_STATE_EXPLODED;
           break;
         }
     
