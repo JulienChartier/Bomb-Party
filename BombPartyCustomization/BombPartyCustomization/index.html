@@ -1,26 +1,25 @@
-﻿<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Index</title>
-    <script src="Scripts/jquery-1.9.1.min.js"></script>
-    <script src="Scripts/jquery.signalR-2.2.0.min.js"></script>
-    <script src="Scripts/Constellation-1.8.0.js"></script>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" ng-app="mainApp">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		
+		<title>Index</title>
+		
+		<script src="Scripts/jquery-1.9.1.min.js"></script>
+		<script src="Scripts/jquery.signalR-2.2.0.min.js"></script>
 
-    <script src="Scripts/angular.min.js"></script>
-    <script src="Scripts/ngConstellation-1.8.0.js"></script>
+		<script src="Scripts/angular.min.js"></script>
 
-    <script src="Scripts/index.js"></script>
+		<script src="Scripts/index.js"></script>
 
-    <!-- Bootstrap core CSS -->
-    <link href="Content/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="Styles/index.css" />
-</head>
-<body ng-controller="MyController">
-    <div>
-        <a href="main.html">Log in as Bomberman!</a>
-        <br />
-        <a>Log in as a fun killer!</a>
-    </div>
-</body>
+		<!-- Bootstrap core CSS -->
+		<link href="Content/bootstrap.min.css" rel="stylesheet" />
+		<link rel="stylesheet" type="text/css" href="Styles/index.css" />
+	</head>
+	<body ng-controller="MyController">
+		<div class="btn-group" style="width:100%">
+			<button class="btn btn-default btn-block" ng-click="login(true)">Log in as Bomberman!</button>
+			<button class="btn btn-default btn-block" ng-click="login(false)">Log in as a fun killer!</button>
+		</div>
+	</body>
 </html>

@@ -13,13 +13,13 @@ namespace Bombi
     {
         private string MacAddress { get; set; }
         private int Rssi { get; set; }
-        private string Status { get; set; }
-        private long TimerInMs { get; set; }
+        private string State { get; set; }
+        private long TimeInMs { get; set; }
         private List<Object> Components { get; set; }
         private List<Object> Instructions { get; set; }
 
-        private static string[] allStatus = { "Idle", "Activated", "Paused", "Exploded" };
-        private static string ALL_MAC_ADDRESSES = "00:00:00:00:00";
+        private static string[] allState = { "Idle", "Activated", "Paused", "Exploded" };
+        private static string ALL_MAC_ADDRESSES = "FF:FF:FF:FF:FF:FF";
 
         static void Main(string[] args)
         {
@@ -37,8 +37,8 @@ namespace Bombi
             this.MacAddress = macPart(random.Next(0, 16)) + ":" + macPart(random.Next(0, 16)) + ":" +
                 macPart(random.Next(0, 16)) + ":" + macPart(random.Next(0, 16)) + ":" + macPart(random.Next(0, 16));
             this.Rssi = -random.Next(20, 90);
-            this.Status = allStatus[random.Next(0, allStatus.Length)];
-            this.TimerInMs = random.Next(100000, 500000);
+            this.State = allState[random.Next(0, allState.Length)];
+            this.TimeInMs = random.Next(100000, 500000);
             this.Components = new List<Object>();
             this.Instructions = new List<Object>();
 
@@ -65,14 +65,16 @@ namespace Bombi
 
             this.Instructions.Add(new
                 {
-                    Component = this.Components[1],
+                    ComponentName = this.Components[1].Name,
+					ComponentState = this.Components[1].State,
                     MinDuration = 0,
                     MaxDuration = 0
                 });
 
             this.Instructions.Add(new
             {
-                Component = this.Components[0],
+                ComponentName = this.Components[0].Name,
+				ComponentState = this.Components[0].State,
                 MinDuration = 1000,
                 MaxDuration = 0
             });
@@ -85,22 +87,22 @@ namespace Bombi
                     {
                         MacAddress = this.MacAddress,
                         Rssi = this.Rssi,
-                        Status = this.Status,
-                        TimerInMs = this.TimerInMs,
+                        State = this.State,
+                        TimeInMs = this.TimeInMs,
                         Components = this.Components,
                         Instructions = this.Instructions
                     });
 
                     Thread.Sleep(1000);
 
-                    if (this.Status == "Activated")
+                    if (this.State == "Activated")
                     {
-                        this.TimerInMs -= 1000;
+                        this.TimeInMs -= 1000;
 
-                        if (this.TimerInMs <= 0)
+                        if (this.TimeInMs <= 0)
                         {
-                            this.Status = "Exploded";
-                            this.TimerInMs = 0;
+                            this.State = "Exploded";
+                            this.TimeInMs = 0;
                         }
                     }
                 }
@@ -133,27 +135,27 @@ namespace Bombi
             {
                 case "ActivateBomb":
                     {
-                        this.Status = "Activated";
+                        this.State = "Activated";
                         break;
                     }
                 case "PauseBomb":
                     {
-                        this.Status = "Paused";
+                        this.State = "Paused";
                         break;
                     }
                 case "ResumeBomb":
                     {
-                        this.Status = "Activated";
+                        this.State = "Activated";
                         break;
                     }
                 case "ResetBomb":
                     {
-                        this.Status = "Idle";
+                        this.State = "Idle";
                         break;
                     }
                 case "BombConfiguration":
                     {
-                        this.TimerInMs = e.StateObject.DynamicValue.Configuration.TimeInMs;
+                        this.TimeInMs = e.StateObject.DynamicValue.Configuration.TimeInMs;
                         this.Instructions.Clear();
 
                         this.Instructions.AddRange(e.StateObject.DynamicValue.Configuration.AllInstructions);

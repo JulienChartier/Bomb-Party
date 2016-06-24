@@ -19,7 +19,15 @@
 
                constellation.connect();
 
+			   $scope.isBomberman = localStorage.getItem("isBomberman");
+			   
                $scope.editedBomb = JSON.parse(localStorage.getItem("editedBomb"));
+
+			   if ($scope.editedBomb == null)
+			   {
+				   return;
+			   }
+			   
                $scope.allBombComponents = $scope.editedBomb.Components;
 
                $scope.formatTime = formatTime;

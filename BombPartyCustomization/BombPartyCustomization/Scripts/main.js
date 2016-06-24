@@ -39,6 +39,7 @@
 
                 $scope.allBombs = {};
                 $scope.selectedBomb = null;
+				$scope.isBomberman = localStorage.getItem("isBomberman");
 
                 // Unselect if already selected.
                 $scope.selectBomb = function (bomb) {
@@ -56,21 +57,28 @@
                 $scope.activateBomb = function(bomb)
                 {
                     constellation.sendMessage({ Scope: 'Package', Args: ['BombPartyServer'] }, 'ActivateBomb', bomb.MacAddress);
+					// Either
+					//constellation.sendMessage({ Scope: 'Package', Args: ['Bombi'] }, 'ActivateBomb', bomb.MacAddress);
+					// Or (and same for others)
+					//constellation.sendMessage({ Scope: 'Sentinel', Args: ['ArduinoCard_' + bomb.MacAddress] }, 'ActivateBomb');
                 };
 
                 $scope.pauseBomb = function(bomb)
                 {
                     constellation.sendMessage({ Scope: 'Package', Args: ['BombPartyServer'] }, 'PauseBomb', bomb.MacAddress);
+					//constellation.sendMessage({ Scope: 'Package', Args: ['Bombi'] }, 'PauseBomb', bomb.MacAddress);
                 }
 
                 $scope.resumeBomb = function (bomb)
                 {
                     constellation.sendMessage({ Scope: 'Package', Args: ['BombPartyServer'] }, 'ResumeBomb', bomb.MacAddress);
+					//constellation.sendMessage({ Scope: 'Package', Args: ['Bombi'] }, 'ResumeBomb', bomb.MacAddress);
                 };
 
                 $scope.resetBomb = function(bomb)
                 {
                     constellation.sendMessage({ Scope: 'Package', Args: ['BombPartyServer'] }, 'ResetBomb', bomb.MacAddress);
+					//constellation.sendMessage({ Scope: 'Package', Args: ['Bombi'] }, 'ResetBomb', bomb.MacAddress);
                 }
 
                 $scope.editBomb = function(bomb)

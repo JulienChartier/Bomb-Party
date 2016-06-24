@@ -10,7 +10,7 @@ namespace BombPartyServer
 {
     public class Program : PackageBase
     {
-        private static string ALL_MAC_ADDRESSES = "00:00:00:00:00";
+        private static string ALL_MAC_ADDRESSES = "FF:FF:FF:FF:FF:FF";
         private Dictionary<string, BombConfiguration> allBombConfigurations = new Dictionary<string, BombConfiguration>();
 
         static void Main(string[] args)
@@ -23,6 +23,9 @@ namespace BombPartyServer
             PackageHost.WriteInfo("PARTY HARD!!");
         }
 
+		// TODO: Remove all MessageCallbacks below and put them in
+		// BombPartyCustomization (and use sendMessage instead of
+		// pushStateObject).
         [MessageCallback]
         public void ActivateBomb(string macAddress)
         {
