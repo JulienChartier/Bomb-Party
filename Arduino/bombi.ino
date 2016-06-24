@@ -1,21 +1,20 @@
 #include <SPI.h>
 #include <WiFi.h>
-#include <Constellation.h>
 #include <ArduinoJson.h>
+#include <Constellation.h>
 
 WiFiClient wifiClient;
-char* ssid     = "Xion";
-char* password = "xionpassword";
+char* ssid     = "quartus";
+char* password = "settings";
 
 
 /* Create the Constellation connection */
-Constellation constellation(wifiClient, "89.156.77.212", 8088, "ArduinoCard", "Bombi", "PUT_ACCESS_KEY_HERE!");
-
-byte mac[6];
+Constellation constellation(wifiClient, "89.156.77.212", 8088, "ArduinoCard", "Bombi", "07284abc978bcdc9cb4713c5292d3900a54107b8");//89.156.77.212
 
 #define MAX_COMPONENT_COUNT 12
 #define MAX_COMPONENT_NAME_LENGTH 15
 #define MAX_INSTRUCTION_COUNT 20
+#define HAS_FLAG(test, flag) ((test) / (flag) & 1)
 
 #define ARRAY_COUNT(ar) (sizeof((ar))/sizeof((ar)[0]))
 
@@ -72,10 +71,25 @@ typedef struct Bomb
 unsigned long lastTick;
 unsigned long totalTime;
 
-char gameSerieZero[4] = {1,3,5,0};
-char gameSerieOne[4] = {1,9,8,0};
-char gameSerieTwo[4] = {0,1,3,0};
-char gameSerieThree[4] = {2,12,14,0};
+
+char gameSeries[4][4] = {
+    {1,3,5,0},
+    {1,9,8,0},
+    {0,1,3,0},
+    {2,12,14,0},
+};
+
+int linkActionToButton[4] = {0,1,2,3}; 
+
+typedef enum GameMode
+{
+  GAME_MODE_CLASSICAL,
+  GAME_MODE_SOLVE_LIGHT,
+  
+} GameMode;
+
+GameMode gameMode = GAME_MODE_SOLVE_LIGHT;
+
 
 char componentCount = 0;
 
@@ -97,13 +111,10 @@ Bomb bomb = Bomb{};
 // Could just be a char oldComponentStates[MAX_COMPONENT_COUNT].
 Bomb oldState = Bomb{};
 
-void clearInstructions(char totalClear = false)
+void clearInstructions()
 {
-  if (totalClear)
-  {
     memset(bomb.allInstructions, 0, sizeof(Instruction) * bomb.instructionCount);
     bomb.instructionCount = 0;
-  }
     bomb.currentInstruction = 0;
 }
 
@@ -235,11 +246,19 @@ void updateComponentsState()
     }  
 }
 
+void setComponentState(int index, char state)
+{
+  bomb.allComponents[index].state = state;
+  digitalWrite(bomb.allComponents[index].pin, state);
+}
+
 void setup()
 {
-         Serial.begin(9600);
-         delay(10);
-  
+  randomSeed(millis());
+  Serial.begin(9600);
+
+         Serial.begin(9600);  delay(10);
+ 
         // Connect to Wifi  
         Serial.print("Connecting to ");
         Serial.println(ssid);  
@@ -250,31 +269,42 @@ void setup()
         }
         Serial.println("WiFi connected. IP: ");
         Serial.println(WiFi.localIP());
-        
-        WiFi.macAddress(mac);
   
   // Get sentinel name
         Serial.println(constellation.getSentinelName());
         Serial.println("wololo");
-        
-        constellation.setMessageReceiveCallback(messageReceive);
-        constellation.subscribeToMessage();
-        
-        NEW_LED(RED_0, 11, HIGH);
-        NEW_LED(GREEN_0,12,LOW);
-        NEW_BUTTON(BUTTON_0, 13);
+        constellation.writeInfo("hello, world!\n");
 
+
+        // initialisation des boutons et leds
+        NEW_BUTTON(BUTTON_0, 13);
+        NEW_BUTTON(BUTTON_1,10);        
+        NEW_BUTTON(BUTTON_2, 7);
+        NEW_BUTTON(BUTTON_3,4);
+
+        NEW_LED(GREEN_0,12,LOW);
+        NEW_LED(RED_0, 11, HIGH);
+        
         NEW_LED(GREEN_1,9,LOW);
         NEW_LED(RED_1,8,HIGH);
-        NEW_BUTTON(BUTTON_1,10);
-
-        NEW_LED(RED_2, 5, HIGH);
+        
         NEW_LED(GREEN_2,6,LOW);
-        NEW_BUTTON(BUTTON_2, 7);
-
+        NEW_LED(RED_2, 5, HIGH);
+        
         NEW_LED(GREEN_3,3,LOW);
         NEW_LED(RED_3,2,HIGH);
-        NEW_BUTTON(BUTTON_3,4);
+
+
+        //give instruction to button
+        for(int i=0;i<10;++i)
+        {
+          int sheep = random(0,4);
+          int beardy = random(0,4);
+          int cat = linkActionToButton[sheep];
+          linkActionToButton[sheep]=linkActionToButton[beardy];
+          linkActionToButton[beardy]=cat;
+        }
+        
         
         // This should be in loop with a boolean to indicate when to reset...
   // Only the connection to constellation should be here.
@@ -286,68 +316,117 @@ void setup()
     pushInstruction(1, BUTTON_DOWN);
     pushInstruction(1, BUTTON_UP, 0, 1000);
   }
-   */     
+   */
+   /*    
   pushInstruction(2, BUTTON_DOWN);
   pushInstruction(2, BUTTON_UP);
 
   pushInstruction(5, BUTTON_DOWN);
   pushInstruction(5, BUTTON_UP);
+  */
   
   lastTick = millis();
 }
 
 void loop()
 {
+      // onStateObjectReceive...
   switch (bomb.state)
   {
     case BOMB_STATE_ACTIVATED:
     {
-      oldState = bomb;
+          oldState = bomb;
 
-      updateComponentsState();
-        
-      unsigned long currentTime = millis(), delta = currentTime - lastTick;
-      bomb.timeLeftInMs -= delta;
-      lastTick = currentTime;
-        
-      //Serial.print("Time left: ");
-      Serial.println(bomb.timeLeftInMs / 1000.0f);
-        
-      if (bomb.timeLeftInMs <= 0)
-      {
-        bomb.timeLeftInMs = 0;
-        // explode():
-        Serial.println("TIME OUT!!");
-        digitalWrite(allComponents[0].pin, HIGH);
-        bomb.state = BOMB_STATE_EXPLODED;
-      }
-        
-      char state = compareBombToOldState(delta);
-
-      switch (state)
-      {
-        case 1:
-        {
-          ++bomb.currentInstruction;
-
-          if (bomb.currentInstruction == bomb.instructionCount)
+          updateComponentsState();
+            
+          unsigned long currentTime = millis(), delta = currentTime - lastTick;
+          bomb.timeLeftInMs -= delta;
+          lastTick = currentTime;
+            
+          //Serial.print("Time left: ");
+          Serial.println(bomb.timeLeftInMs / 1000.0f);
+            
+          if (bomb.timeLeftInMs <= 0)
           {
-            // shutdown();
-            Serial.println("Success!!");
+            bomb.timeLeftInMs = 0;
+            // explode():
+            Serial.println("TIME OUT!!");
+            digitalWrite(allComponents[0].pin, HIGH);
+
+            for (int i = 0; i < componentCount; ++i)
+            {
+              setComponentState(i, LOW);
+            }
+            
+            bomb.state = BOMB_STATE_EXPLODED;
+          }
+          
+          switch (gameMode)
+          {
+            case GAME_MODE_CLASSICAL:
+            {
+              char state = compareBombToOldState(delta);
+        
+              switch (state)
+              {
+                case 1:
+                {
+                  ++bomb.currentInstruction;
+        
+                  if (bomb.currentInstruction == bomb.instructionCount)
+                  {
+                    // shutdown();
+                    Serial.println("Success!!");
+                    bomb.state = BOMB_STATE_DEACTIVATED;
+                  }
+            
+                  break;
+                }
+        
+                case -1:
+                {
+                  // explode():
+                  Serial.println("Wrong!!");
+                  bomb.state = BOMB_STATE_EXPLODED;
+                  break;
+                }
+            
+                default:
+                  break;
+              }
+
+          break;        
+        }
+        case GAME_MODE_SOLVE_LIGHT:
+        {
+          for(int i = 0;i<4;i++){
+            if((bomb.allComponents[i].state != oldState.allComponents[i].state) &&
+               (bomb.allComponents[i].state == BUTTON_DOWN)){
+                char *allLightFlags = gameSeries[linkActionToButton[i]];
+              char lightFlag = allLightFlags[allLightFlags[3]];
+              for(int j = 0;j<4;j++){
+                if(HAS_FLAG(lightFlag, 1 << j )){
+                  setComponentState(4+2*j,!bomb.allComponents[4+2*j].state);
+                  setComponentState(5+2*j,!bomb.allComponents[5+2*j].state);
+                }
+              }
+              
+              allLightFlags[3] = (allLightFlags[3] + 1) % 3;
+            }
+          }
+          boolean gameSolved = true;
+          for(int i=4;i<12;i+=2){
+            if(bomb.allComponents[i].state==LOW){
+              gameSolved = false;
+              break;
+            }
+          }
+          if(gameSolved){
             bomb.state = BOMB_STATE_DEACTIVATED;
           }
-    
           break;
         }
 
-        case -1:
-        {
-          // explode():
-          Serial.println("Wrong!!");
-          bomb.state = BOMB_STATE_EXPLODED;
-          break;
-        }
-    
         default:
           break;
       }
@@ -357,60 +436,11 @@ void loop()
   
     default:
     {
-      delay(500);
+      delay(1000);
     
       break;
     }
   }
-  
-  constellation.pollConstellation(400);
-  delay(100);
 }
 
-void messageReceive(JsonObject& json)
-{
-    Serial.print("Message received: ");
-    
-    const char *macDestination = json["Data"]["MacAddress"].asString();
-    
-    if (stricmp(macDestination, (const char*) mac) != 0)
-    {
-      return;  
-    }
-    
-    Serial.print("for me, and it's: ");
-    
-    const char *key = json["Key"].asString();
-    
-    Serial.println(key);
-    
-    if (stricmp(key, "ActivateBomb") == 0)
-    {
-       bomb.state = BOMB_STATE_ACTIVATED; 
-    }
-    else if (stricmp(key, "PauseBomb") == 0)
-    {
-       bomb.state = BOMB_STATE_PAUSED; 
-    }
-    else if (stricmp(key, "ResetBomb") == 0)
-    {
-      resetBomb();  
-    }
-    else if (stricmp(key, "ConfigureBomb") == 0)
-    {
-      totalTime = json["Data"]["TimeLeftInMs"].as<long>();
-      
-      JsonArray& instructions = json["Data"]["Instructions"].asArray();
-    
-      clearInstruction(true);
-      
-      for (JsonObject::iterator it = instructions.begin(); it != instructions.end(); ++it)
-      {
-        JsonObject instruction = it->value;
-        pushInstruction(instruction["ComponentIndex"].as<char>(), instruction["State"].as<char>(),
-                        instruction["MinDuration"].as<unsigned long>(), instruction["MaxDuration"]);
-      }
-      
-      resetBomb();
-    }
-}
+
