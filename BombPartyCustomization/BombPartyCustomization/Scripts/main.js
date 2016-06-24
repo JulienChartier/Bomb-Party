@@ -3,8 +3,8 @@
             function ($scope, constellation) {
                 $scope.connectionState = false;
 
-                constellation.intializeClient("http://localhost:8088",
-                                               "630547c1fada14c61e876be55ac877e13f5c03d7", "BombPartyUI");
+                constellation.intializeClient("http://89.156.77.212:8088",
+                                               "07284abc978bcdc9cb4713c5292d3900a54107b8", "BombPartyUI");
 
                 constellation.onConnectionStateChanged(function (change) {
                     $scope.$apply(function () {
