@@ -305,8 +305,8 @@ void messageReceived(JsonObject& json)
 		totalTime = data["TimeInMs"].as<long>();
 		resetBomb();
 
-		JsonObject& configuration = json["Configuration"];
-		JsonArray& instructions = data["Instructions"].asArray();
+		JsonObject& configuration = data["Configuration"];
+		JsonArray& instructions = configuration["Instructions"].asArray();
 		int instructionCount = instructions.mesureLength();
 		
 		for (int i = 0; i < instructionCount; ++i)
