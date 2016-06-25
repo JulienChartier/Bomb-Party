@@ -71,14 +71,16 @@ typedef enum GameMode
 
 
 WiFiClient wifiClient;
-char* ssid     = "quartus";
-char* password = "settings";
+char ssid[] = "NUMERICABLE-3B9A";      //  your network SSID (name)
+char* password = "b3daa7f289";
+char *server = "192.168.0.16";
 byte mac[6] = {};
-char *strMac[18] = {};
+char strMac[18] = {};
 
 /* Create the Constellation connection */
-Constellation constellation(wifiClient, "89.156.77.212", 8088, "ArduinoCard", "Bombi", "07284abc978bcdc9cb4713c5292d3900a54107b8");//89.156.77.212
+Constellation constellation(wifiClient, server, 8088, "ArduinoCard", "Bombi", "630547c1fada14c61e876be55ac877e13f5c03d7");//89.156.77.212 // Outdated comment
 
+StaticJsonBuffer<1024> jsonBuffer;
 JsonObject& jsonBombInfoObject = jsonBuffer.createObject();
 JsonArray& jsonAllComponents = jsonBuffer.createArray();
 JsonArray& jsonAllInstructions = jsonBuffer.createArray();
@@ -296,41 +298,54 @@ void messageReceived(JsonObject& json)
 	}
 	else if (strcmp(key, "ResetBomb") == 0)
 	{
-		resetBomb(true);
+		resetBomb();
 	}
 	else if (strcmp(key, "ConfigureBomb") == 0)
 	{
 		JsonObject& data = json["Data"];
-		
-		totalTime = data["TimeInMs"].as<long>();
+		JsonObject& configuration = data["Configuration"];
+    
+		totalTime = configuration["TimeInMs"].as<long>();
 		resetBomb();
 
-		JsonObject& configuration = data["Configuration"];
 		JsonArray& instructions = configuration["Instructions"].asArray();
-		int instructionCount = instructions.mesureLength();
+		int instructionCount = instructions.size();
 		
 		for (int i = 0; i < instructionCount; ++i)
 		{
 			JsonObject& instruction = instructions[i];
 			
-			pushInstruction(instruction["ComponentIndex"].as<char>(), instruction["ComponentState"].as<char>(),
-							instruction["MinDuration"].as<unsigned long>(), instruction["MaxDuration"].as<unsigned long>());
+			pushInstruction((char) instruction["ComponentIndex"].as<int>(), (char) instruction["ComponentState"].as<int>(),
+							        instruction["MinDuration"].as<unsigned long>(), instruction["MaxDuration"].as<unsigned long>());
 		}
 	}
 }
 
 void sendBombInfo()
 {
-	for (int i = 0; i < bomb.componentCount; ++i)
+  int size = bomb.componentCount;
+  char isFresh = jsonAllComponents.size() < size;
+  
+	for (int i = 0; i < size; ++i)
 	{
 		(*(jsonComponents[i]))["Name"] = allComponentNames[i];
 		(*(jsonComponents[i]))["Type"] = (int) bomb.allComponents[i].type;
 		(*(jsonComponents[i]))["State"] = (int) bomb.allComponents[i].state;
 
-		jsonAllComponents.add((*(jsonComponents[i])));
+    if (isFresh)
+    {
+      jsonAllComponents.add((*(jsonComponents[i])));
+    }
+    else
+    {
+		  jsonAllComponents.set(i, (*(jsonComponents[i])));
+    }
 	}
 
-	for (int i = 0; i < instructionCount; ++i)
+  size = bomb.instructionCount;
+  isFresh = jsonAllInstructions.size() < size;
+  
+	for (int i = 0; i < size; ++i)
 	{
 		int index = bomb.allInstructions[i].componentIndex;
 	
@@ -339,7 +354,14 @@ void sendBombInfo()
 		(*(jsonInstructions[i]))["MinDuration"] = bomb.allInstructions[i].minDuration;
 		(*(jsonInstructions[i]))["MaxDuration"] = bomb.allInstructions[i].maxDuration;
 
-		jsonAllInstructions.add((*(jsonInstructions[i])));
+		if (isFresh)
+    {
+      jsonAllInstructions.add((*(jsonInstructions[i])));
+    }
+    else
+    {
+      jsonAllInstructions.set(i, (*(jsonInstructions[i])));
+    }
 	}
 
 	jsonBombInfoObject["MacAddress"] = strMac;
@@ -349,15 +371,18 @@ void sendBombInfo()
 	jsonBombInfoObject["Instructions"] = jsonAllInstructions;
 
 	constellation.pushStateObject("BombInfo", &jsonBombInfoObject);
+  jsonBombInfoObject.printTo(Serial);
+  Serial.println();
 }
 
 void setup()
 {
-	randomSeed(millis());
+	randomSeed(analogRead(0));
 	Serial.begin(9600);
+ constellation.setDebugMode(true);
 
 	WiFi.macAddress(mac);
-	sprintf(strMac, "%02d:%02d:%02d:%02d:%02d:%02d",
+	sprintf(strMac, "%02x:%02x:%02x:%02x:%02x:%02x",
 			mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 	
 	// Connect to Wifi  
@@ -375,7 +400,7 @@ void setup()
 	Serial.println(constellation.getSentinelName());
 	Serial.println("wololo");
 	constellation.writeInfo("hello, world!\n");
-
+  
 	// initialisation des boutons et leds
 	NEW_BUTTON(BUTTON_0, 13);
 	NEW_BUTTON(BUTTON_1,10);        
@@ -412,12 +437,12 @@ void setup()
 
 	for (int i = 0; i < MAX_INSTRUCTION_COUNT; i++)
 	{
-		jsonInstruction[i] = &jsonBuffer.createObject();
+		jsonInstructions[i] = &jsonBuffer.createObject();
 	}
         
 	// This should be in loop with a boolean to indicate when to reset...
 	// Only the connection to constellation should be here.
-	totalTime = 30000;
+	totalTime = 3000;
 	resetBomb();
 
 	/*for (int i = 0; i < 10; ++i)
@@ -426,15 +451,13 @@ void setup()
 	  pushInstruction(1, BUTTON_UP, 0, 1000);
 	  }
 	*/
-	/*    
 		  pushInstruction(2, BUTTON_DOWN);
 		  pushInstruction(2, BUTTON_UP);
 
 		  pushInstruction(5, BUTTON_DOWN);
 		  pushInstruction(5, BUTTON_UP);
-	*/
 
-	constellation.setMessageCallback(messageReceived);
+	constellation.setMessageReceiveCallback(messageReceived);
 	constellation.subscribeToMessage();
 	
 	lastTick = millis();
@@ -442,8 +465,8 @@ void setup()
 
 void loop()
 {
-	constellation.pollConstellation(400);
-	delay(100);
+	constellation.pollConstellation(100);
+	delay(50);
 	
 	switch (bomb.state)
 	{
@@ -458,7 +481,7 @@ void loop()
 			lastTick = currentTime;
             
 			//Serial.print("Time left: ");
-			Serial.println(bomb.timeLeftInMs / 1000.0f);
+			//Serial.println(bomb.timeLeftInMs / 1000.0f);
             
 			if (bomb.timeLeftInMs <= 0)
 			{
@@ -520,7 +543,7 @@ void loop()
 				{
 					for(int i = 0;i<4;i++)
 					{
-						ComponentState state = bomb.allComponents[i].state;
+						char state = bomb.allComponents[i].state;
 						
 						if((state != oldState.allComponents[i].state) &&
 						   (state == BUTTON_DOWN))
