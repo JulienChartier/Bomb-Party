@@ -15,6 +15,7 @@ namespace Bombi
         private int Rssi { get; set; }
         private string State { get; set; }
         private long TimeInMs { get; set; }
+        private long TotalTimeInMs { get; set; }
         private List<Object> Components { get; set; }
         private List<Object> Instructions { get; set; }
 
@@ -38,7 +39,8 @@ namespace Bombi
                 macPart(random.Next(0, 16)) + ":" + macPart(random.Next(0, 16)) + ":" + macPart(random.Next(0, 16));
             this.Rssi = -random.Next(20, 90);
             this.State = allState[random.Next(0, allState.Length)];
-            this.TimeInMs = random.Next(100000, 500000);
+            this.TotalTimeInMs = random.Next(100000, 500000);
+            this.TimeInMs = this.TotalTimeInMs;
             this.Components = new List<Object>();
             this.Instructions = new List<Object>();
 
@@ -65,16 +67,16 @@ namespace Bombi
 
             this.Instructions.Add(new
                 {
-                    ComponentName = this.Components[1].Name,
-					ComponentState = this.Components[1].State,
+                    ComponentName = ((dynamic) this.Components[1]).Name,
+                    ComponentState = ((dynamic)this.Components[1]).State,
                     MinDuration = 0,
                     MaxDuration = 0
                 });
 
             this.Instructions.Add(new
             {
-                ComponentName = this.Components[0].Name,
-				ComponentState = this.Components[0].State,
+                ComponentName = ((dynamic) this.Components[0]).Name,
+                ComponentState = ((dynamic)this.Components[0]).State,
                 MinDuration = 1000,
                 MaxDuration = 0
             });
@@ -150,12 +152,14 @@ namespace Bombi
                     }
                 case "ResetBomb":
                     {
+                        this.TimeInMs = this.TotalTimeInMs;
                         this.State = "Idle";
                         break;
                     }
                 case "BombConfiguration":
                     {
-                        this.TimeInMs = e.StateObject.DynamicValue.Configuration.TimeInMs;
+                        this.TotalTimeInMs = e.StateObject.DynamicValue.Configuration.TimeInMs;
+                        this.TimeInMs = this.TotalTimeInMs;
                         this.Instructions.Clear();
 
                         this.Instructions.AddRange(e.StateObject.DynamicValue.Configuration.AllInstructions);

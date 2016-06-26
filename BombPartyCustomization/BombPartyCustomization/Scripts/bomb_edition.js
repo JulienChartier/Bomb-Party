@@ -4,6 +4,8 @@
            {
                $scope.connectionState = false;
                // NOTE: Find a way to pass constellation around?
+               //constellation.intializeClient("http://89.156.77.212:8088",
+               //                               "07284abc978bcdc9cb4713c5292d3900a54107b8", "BombPartyUI");
                constellation.intializeClient("http://localhost:8088",
                                                "630547c1fada14c61e876be55ac877e13f5c03d7", "BombPartyUI");
 
@@ -31,7 +33,7 @@
                $scope.allBombComponents = $scope.editedBomb.Components;
 
                $scope.formatTime = formatTime;
-               var formattedTime = $scope.formatTime($scope.editedBomb.TimerInMs);
+               var formattedTime = $scope.formatTime($scope.editedBomb.TimeInMs);
                var values = formattedTime.split(":");
 
                $scope.formattedTime = { hours: parseInt(values[0]), minutes: parseInt(values[1]), seconds: parseInt(values[2]) };
@@ -53,7 +55,7 @@
                        factor *= 60;
                    }
 
-                   $scope.editedBomb.TimerInMs = result;
+                   $scope.editedBomb.TimeInMs = result;
                };
 
                $scope.allInteractiveComponentNames = [];
@@ -75,8 +77,8 @@
                    $scope.allInstructionComponentStates = [];
 
                    for (var i = 0; i < $scope.editedBomb.Instructions.length; ++i) {
-                       $scope.allInstructionComponentNames[i] = $scope.editedBomb.Instructions[i].Component.Name;
-                       $scope.allInstructionComponentStates[i] = $scope.editedBomb.Instructions[i].Component.State;
+                       $scope.allInstructionComponentNames[i] = $scope.editedBomb.Instructions[i].ComponentName;
+                       $scope.allInstructionComponentStates[i] = $scope.editedBomb.Instructions[i].ComponentState;
                    }
                }
 
@@ -157,8 +159,8 @@
 
                    for (var i = 0; i < $scope.editedBomb.Instructions.length; ++i)
                    {
-                       $scope.editedBomb.Instructions[i].Component.Name = $scope.allInstructionComponentNames[i];
-                       $scope.editedBomb.Instructions[i].Component.State = $scope.allInstructionComponentStates[i];
+                       $scope.editedBomb.Instructions[i].ComponentName = $scope.allInstructionComponentNames[i];
+                       $scope.editedBomb.Instructions[i].ComponentState = $scope.allInstructionComponentStates[i];
                    }
                };
 
@@ -192,7 +194,7 @@
                {
                    $scope.editedBomb.Instructions = $scope.editedBomb.Instructions.filter(function (instruction)
                    {
-                       return (instruction.Component.Name != "");
+                       return (instruction.ComponentName != "");
                    });
 
                    $scope.init();
@@ -200,9 +202,9 @@
                    localStorage.setItem("editedBomb", JSON.stringify($scope.editedBomb));
 
                    constellation.sendMessage({ Scope: 'Package', Args: ['BombPartyServer'] }, 'ConfigureBomb',
-                                             [$scope.editedBomb.MacAddress, $scope.editedBomb.TimerInMs, $scope.editedBomb.Instructions]);
+                                             [$scope.editedBomb.MacAddress, $scope.editedBomb.TimeInMs, $scope.editedBomb.Instructions]);
 
-                   window.location = "/main.html";
+                   window.location = "main.html";
                }
 
                $scope.resetEditedBomb = function()
