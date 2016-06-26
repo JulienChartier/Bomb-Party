@@ -1,0 +1,70 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" ng-app="mainApp">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Bomb Visualization</title>
+
+    <script src="Scripts/jquery-1.9.1.min.js"></script>
+    <script src="Scripts/jquery.signalR-2.2.0.min.js"></script>
+    <script src="Scripts/Constellation-1.8.0.js"></script>
+
+    <script src="Scripts/angular.min.js"></script>
+    <script src="Scripts/ngConstellation-1.8.0.js"></script>
+
+    <script src="Scripts/options.js"></script>
+
+    <link href="Content/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="Styles/main.css" />
+</head>
+<body ng-controller="MyController">
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="index.html">Home</a>
+            </div>
+            <div id="navbar" class="collapse navbar-collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="main.html">Bomb</a></li>
+                    <li><a href="miscellaneous.html">Miscellaneous</a></li>
+                    <li class="active"><a href="options.html">Options</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container text-center">
+        <p ng-show="connectionState" class="alert alert-success">Connected</p>
+        <p ng-hide="connectionState" class="alert alert-warning">Waiting for connection...</p>
+    </div>
+
+    <div class="container">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h1>URI</h1>
+            </div>
+            <div class="panel-body">
+                <p class="text-center"><label>http://</label><input type="text" size="3" ng-model="newServerUri[0]" />.<input type="text" size="3" ng-model="newServerUri[1]" />.<input type="text" size="3" ng-model="newServerUri[2]" />.<input type="text" size="3" ng-model="newServerUri[3]" />:<input type="text" ng-model="newServerUri[4]" /></p>
+            </div>
+        </div>
+        <!--<p>Username <input type="text" /></p>
+        <p>Password <input type="password" /></p>-->
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h1>Access Key</h1>
+            </div>
+            <div class="panel-body">
+                <p class="text-center"><input type="text" ng-model="newAccessKey" /></p>
+            </div>
+        </div>
+            <p class="container text-center"><button class="btn btn-primary" ng-click="updateConnectionSettings()">Confirm</button><button class="btn btn-primary" ng-click="cancelConnectionChanges()">Cancel</button></p>
+    </div>
+</body>
+</html>
