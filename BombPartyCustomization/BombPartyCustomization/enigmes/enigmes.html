@@ -1,0 +1,94 @@
+﻿<!doctype html>
+<html lang="fr" ng-app="mainApp">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    
+    <script type="text/javascript" src="../Scripts/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../Scripts/angular.min.js" ></script>
+    
+    <script src="app.js"></script>
+    <script type="text/javascript" src="javascript.js"></script>
+    <script src="../Scripts/bootstrap.min.js"></script>
+
+    <link href="../Content/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="../Styles/bomb_edition.css" />
+
+    <title>Enigmes</title>
+</head>
+<body ng-controller="MainCtrl" onload="my_draw()">
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="../index.html">Home</a>
+            </div>
+            <div id="navbar" class="collapse navbar-collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="../main.html">Bomb</a></li>
+                    <li><a href="../miscellaneous.html">Miscellaneous</a></li>
+                    <li><a href="../options.html">Options</a></li>
+                    <li class="active"><a href="enigmes.html">Puzzles</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <h1 class="text-center">
+        <strong>Selected puzzle: </strong><i>{{enigme_selection.Title}}</i></h1>
+        
+    <h3 class="text-center">
+        <select ng-model="enigme_selection" ng-options="enigme as ('Puzzle ' + (enigme.id+1) + ' - ' + enigme.Title) for enigme in enigmes | orderBy:'id'| filter:{available:'true'}">
+
+            <option value="">Select a puzzle</option>
+        </select>
+    </h3><br/>
+
+    <div ng-show="(enigme_selection != null)  && (enigme_selection.Description.length != '')" class="jumbotron text-center">{{enigme_selection.Description}}</div>
+    <!--<img src={{enigme_selection.img}} style={{enigme_selecti    <!--<img src={{enigme_selection.img}} style={{enigme_selection.style}}> </br>-->
+    
+    
+    <div class="container">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h1 class="text-center">Current puzzle</h1>
+            </div>
+            <div class="panel-body">
+                <iframe id="myFrame" src={{enigme_selection.link}} width="100%" height="500" frameborder="0"></iframe>
+            </div>
+        </div>
+    </div>
+  
+
+    <!--<div id="palette">
+        <input type="submit" onclick="newColor('blue');" class="blue" value="blue"> </input>
+        <input type="submit" onclick="newColor('red');" class="red" value="red"> </input>
+        <input type="submit" onclick="newColor('green');" class="green" value="green"> </input>
+        <input type="submit" onclick="newColor('yellow');" class="yellow" value="yellow"> </input>
+        <input type="submit" onclick="newColor('black');" class="black" value="black"> </input>
+        <input type="submit" onclick="newColor('purple');" class="purple" value="purple"> </input>
+        <input type="submit" onclick="newColor('white');" class="white" value="gomme"> </input>
+    </div>
+
+    <div id="size">
+        <input type="submit" onclick="newSize(1);" value="1"> </input>
+        <input type="submit" onclick="newSize(2);" value="2"> </input>
+        <input type="submit" onclick="newSize(5);" value="5"> </input>
+        <input type="submit" onclick="newSize(10);" value="10"> </input>
+    </div>
+
+    <div id="clear">
+        <input type="submit" onclick="clear_canvas();" class="clear" value="clear"> </input>
+    </div>
+    <canvas width="800" height="800" id="my_canvas">
+        Votre navigateur ne supporte pas canvas !
+    </canvas>
+        
+
+    </div>-->
+</body>
+</html>

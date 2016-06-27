@@ -65,6 +65,23 @@
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="Content\ui-bootstrap-csp.css" />
+    <Content Include="enigmes\app.js" />
+    <Content Include="enigmes\enigmes.html" />
+    <Content Include="enigmes\enigmes\enigme1\enigme1.html" />
+    <Content Include="enigmes\enigmes\enigme2\enigme2.html" />
+    <Content Include="enigmes\enigmes\enigme3\enigme3.html" />
+    <Content Include="enigmes\enigmes\enigme4\enigme4.html" />
+    <Content Include="enigmes\enigmes\enigme5\enigme5.html" />
+    <Content Include="enigmes\enigmes\enigme6\enigme6.html" />
+    <Content Include="enigmes\enigmes\enigme7\enigme7.html" />
+    <Content Include="enigmes\img\black_dynamite.jpg" />
+    <Content Include="enigmes\img\isen-groupe.jpg" />
+    <Content Include="enigmes\img\kansas.png" />
+    <Content Include="enigmes\img\laurier.jpg" />
+    <Content Include="enigmes\img\morse.jpg" />
+    <Content Include="enigmes\img\Music.png" />
+    <Content Include="enigmes\img\root.bmp" />
+    <Content Include="enigmes\javascript.js" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="index.html" />
     <Content Include="main.html" />
@@ -93,6 +110,7 @@
     <Content Include="Content\bootstrap-theme.css.map" />
     <Content Include="fonts\digital-7 %28mono%29.ttf" />
     <None Include="Scripts\jquery-1.9.1.intellisense.js" />
+    <Content Include="Scripts\index.js" />
     <Content Include="Scripts\jquery-1.9.1.js" />
     <Content Include="Scripts\jquery-1.9.1.min.js" />
     <Content Include="Scripts\jquery.signalR-2.2.0.js" />
@@ -102,6 +120,7 @@
     <Content Include="Scripts\options.js" />
     <Content Include="Styles\bomb_edition.css" />
     <Content Include="Styles\main.css" />
+    <Content Include="Styles\miscellaneous.css" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
