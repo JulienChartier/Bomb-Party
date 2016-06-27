@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="fr" ng-app>
+    <head>
+        <meta charset="UTF-8">
+        <title>Enigmes</title>
+    </head>
+<body onload="my_draw();">
+	<div ng-controller="MainCtrl">
+		<strong>{{title}} sélectionnée : </strong><i>{{enigme_selection.Title}}</i><br/><br/>
+		<select ng-model="enigme_selection" ng-options="enigme as (enigme.Number + ' - ' + enigme.Title) for enigme in enigmes | orderBy:'id'| filter:{available:'true'}">
+			<option value="">Sélectionnez une enigme</option>
+		</select></br></br>
+		
+		{{enigme_selection.Description}} </br>
+			
+		<!--<img src={{enigme_selection.img}} style={{enigme_selection.style}}> </br>-->
+		
+		<iframe id="myFrame" src={{enigme_selection.link}} width="1200" height="850"></iframe>
+		
+		<div id="palette">
+				<input type="submit" onclick="newColor('blue');" class="blue" value="blue"> </input>
+				<input type="submit" onclick="newColor('red');" class="red" value="red"> </input>
+				<input type="submit" onclick="newColor('green');" class="green" value="green"> </input>
+				<input type="submit" onclick="newColor('yellow');" class="yellow" value="yellow"> </input>
+				<input type="submit" onclick="newColor('black');" class="black" value="black"> </input>
+				<input type="submit" onclick="newColor('purple');" class="purple" value="purple"> </input>
+				<input type="submit" onclick="newColor('white');" class="white" value="gomme"> </input>
+			</div>
+			
+			<div id="size">
+				<input type="submit" onclick="newSize(1);" value="1"> </input>
+				<input type="submit" onclick="newSize(2);" value="2"> </input>
+				<input type="submit" onclick="newSize(5);" value="5"> </input>
+				<input type="submit" onclick="newSize(10);" value="10"> </input>
+			</div>
+			
+			<div id="clear">
+				<input type="submit" onclick="clear_canvas();" class="clear" value="clear"> </input>
+			</div>
+			<canvas width="800" height="800" id="my_canvas">
+				Votre navigateur ne supporte pas canvas !
+			</canvas>		
+		</div>
+		
+		
+	</div>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
+	<script src="app.js"></script>
+	<script type="text/javascript" src="jquery.js"></script>
+	<script type="text/javascript" src="javascript.js"></script>
+</body>
+</html>

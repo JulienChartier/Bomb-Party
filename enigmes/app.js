@@ -1,0 +1,75 @@
+var MainCtrl = function ($scope) {
+	$scope.title = "Enigme";
+    $scope.enigmes = [
+		{
+			"Number":"Enigme1",
+			"link" : "enigmes/enigme1/Enigme1.html",
+			"Title":"65 536 = 0111",
+			"available":true,
+			"id":0, 
+			"Description" : "",
+			"img" : "",
+			"style" : "",
+		},
+		{
+			"Number":"Enigme2",
+			"link" : "enigmes/enigme2/Enigme2.html",
+			"Title":"ZERO",
+			"available":true,
+			"id":1, 
+			"Description" : "Appuie Z E R O fois sur chaque bouton !", 
+			"img" : "img/Music.PNG",
+			"style" : "width:304px;height:235px;"
+		},
+		{
+			"Number":"Enigme3",
+			"link" : "enigmes/enigme3/Enigme3.html",
+			"Title":"Morse",
+			"available":true,
+			"id":2, 
+			"Description" : "", 
+			"img" : "",
+			"style" : "",
+		},
+		{
+			"Number":"Enigme4",
+			"link" : "enigmes/enigme4/Enigme4.html",
+			"Title":"Emperor",
+			"available":true,
+			"id":3, 
+			"Description" : "", 
+			"img" : "",
+			"style" : "",
+		},
+		{
+			"Number":"Enigme5",
+			"link" : "enigmes/enigme5/Enigme5.html",
+			"Title":"guess what?",
+			"available":true,
+			"id":4, 
+			"Description" : "", 
+			"img" : "",
+			"style" : "",
+		},
+		{
+			"Number":"Enigme6",
+			"link" : "enigmes/enigme6/Enigme6.html",
+			"Title":"gray",
+			"available":true,
+			"id":5, 
+			"Description" : "", 
+			"img" : "",
+			"style" : "",
+		},
+		{
+			"Number":"Enigme7",
+			"link" : "enigmes/enigme7/Enigme7.html",
+			"Title":"konami code",
+			"available":true,
+			"id":6, 
+			"Description" : "", 
+			"img" : "",
+			"style" : "",
+		}
+	];
+};
