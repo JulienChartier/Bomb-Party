@@ -1,10 +1,10 @@
 angular.module("mainApp", [])
        .controller("MainCtrl", ["$scope", function ($scope) {
-           $scope.title = "Enigme";
+           $scope.title = "enigme";
            $scope.enigmes = [
                {
-                   "Number": "Enigme1",
-                   "link": "enigmes/enigme1/Enigme1.html",
+                   "Number": "enigme1",
+                   "link": "enigmes/enigme1/enigme1.html",
                    "Title": "65 536 = 0111",
                    "available": true,
                    "id": 0,
@@ -13,8 +13,8 @@ angular.module("mainApp", [])
                    "style": "",
                },
                {
-                   "Number": "Enigme2",
-                   "link": "enigmes/enigme2/Enigme2.html",
+                   "Number": "enigme2",
+                   "link": "enigmes/enigme2/enigme2.html",
                    "Title": "ZERO",
                    "available": true,
                    "id": 1,
@@ -23,8 +23,8 @@ angular.module("mainApp", [])
                    "style": "width:304px;height:235px;"
                },
                {
-                   "Number": "Enigme3",
-                   "link": "enigmes/enigme3/Enigme3.html",
+                   "Number": "enigme3",
+                   "link": "enigmes/enigme3/enigme3.html",
                    "Title": "Morse",
                    "available": true,
                    "id": 2,
@@ -33,8 +33,8 @@ angular.module("mainApp", [])
                    "style": "",
                },
                {
-                   "Number": "Enigme4",
-                   "link": "enigmes/enigme4/Enigme4.html",
+                   "Number": "enigme4",
+                   "link": "enigmes/enigme4/enigme4.html",
                    "Title": "Emperor",
                    "available": true,
                    "id": 3,
@@ -43,8 +43,8 @@ angular.module("mainApp", [])
                    "style": "",
                },
                {
-                   "Number": "Enigme5",
-                   "link": "enigmes/enigme5/Enigme5.html",
+                   "Number": "enigme5",
+                   "link": "enigmes/enigme5/enigme5.html",
                    "Title": "guess what?",
                    "available": true,
                    "id": 4,
@@ -53,8 +53,8 @@ angular.module("mainApp", [])
                    "style": "",
                },
                {
-                   "Number": "Enigme6",
-                   "link": "enigmes/enigme6/Enigme6.html",
+                   "Number": "enigme6",
+                   "link": "enigmes/enigme6/enigme6.html",
                    "Title": "gray",
                    "available": true,
                    "id": 5,
@@ -63,8 +63,8 @@ angular.module("mainApp", [])
                    "style": "",
                },
                {
-                   "Number": "Enigme7",
-                   "link": "enigmes/enigme7/Enigme7.html",
+                   "Number": "enigme7",
+                   "link": "enigmes/enigme7/enigme7.html",
                    "Title": "konami code",
                    "available": true,
                    "id": 6,

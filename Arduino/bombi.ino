@@ -3,9 +3,11 @@
 #include <ArduinoJson.h>
 #include <Constellation.h>
 
+// TODO: Add visual info when bomb exploded/deactivated?
+
 #define MAX_COMPONENT_COUNT 12
-#define MAX_COMPONENT_NAME_LENGTH 15
-#define MAX_INSTRUCTION_COUNT 20
+#define MAX_COMPONENT_NAME_LENGTH 16
+#define MAX_INSTRUCTION_COUNT 50
 #define HAS_FLAG(test, flag) ((test) / (flag) & 1)
 
 #define ARRAY_COUNT(ar) (sizeof((ar))/sizeof((ar)[0]))
@@ -14,6 +16,8 @@
 #define BUTTON_UP LOW
 
 #define ALL_MAC_ADDRESSES "FF:FF:FF:FF:FF:FF"
+
+#define PUZZLE 7
 
 typedef enum ComponentType
 {
@@ -65,14 +69,13 @@ typedef struct Bomb
 typedef enum GameMode
 {
 	GAME_MODE_CLASSICAL,
-	GAME_MODE_SOLVE_LIGHT,
-  
+	GAME_MODE_SOLVE_LIGHT,  
 } GameMode;
 
 
 WiFiClient wifiClient;
-char ssid[] = "NUMERICABLE-3B9A";      //  your network SSID (name)
-char* password = "b3daa7f289";
+char ssid[] = "Connectify-neko";      //  your network SSID (name)
+char* password = "settings";
 char *server = "192.168.0.16";
 byte mac[6] = {};
 char strMac[18] = {};
@@ -142,6 +145,8 @@ char pushInstruction_(struct Instruction instruction)
 }
 
 #define pushInstruction(componentIndex, state, ...) pushInstruction_(Instruction{componentIndex, state, __VA_ARGS__});
+#define PRESS(index) pushInstruction(index, BUTTON_DOWN);	\
+	pushInstruction(index, BUTTON_UP);
 
 void initBomb()
 {
@@ -323,8 +328,8 @@ void messageReceived(JsonObject& json)
 
 void sendBombInfo()
 {
-  int size = bomb.componentCount;
-  char isFresh = jsonAllComponents.size() < size;
+	int size = bomb.componentCount;
+	char isFresh = jsonAllComponents.size() < size;
   
 	for (int i = 0; i < size; ++i)
 	{
@@ -332,36 +337,36 @@ void sendBombInfo()
 		(*(jsonComponents[i]))["Type"] = (int) bomb.allComponents[i].type;
 		(*(jsonComponents[i]))["State"] = (int) bomb.allComponents[i].state;
 
-    if (isFresh)
-    {
-      jsonAllComponents.add((*(jsonComponents[i])));
-    }
-    else
-    {
-		  jsonAllComponents.set(i, (*(jsonComponents[i])));
-    }
+		if (isFresh)
+		{
+			jsonAllComponents.add((*(jsonComponents[i])));
+		}
+		else
+		{
+			jsonAllComponents.set(i, (*(jsonComponents[i])));
+		}
 	}
 
-  size = bomb.instructionCount;
-  isFresh = jsonAllInstructions.size() < size;
+	size = bomb.instructionCount;
+	isFresh = jsonAllInstructions.size() < size;
   
 	for (int i = 0; i < size; ++i)
 	{
 		int index = bomb.allInstructions[i].componentIndex;
 	
-		(*(jsonInstructions[i]))["ComponentName"] = allComponentNames[index];
+		(*(jsonInstructions[i]))["ComponentIndex"] = index;
 		(*(jsonInstructions[i]))["ComponentState"] = (int) bomb.allComponents[index].state; 
 		(*(jsonInstructions[i]))["MinDuration"] = bomb.allInstructions[i].minDuration;
 		(*(jsonInstructions[i]))["MaxDuration"] = bomb.allInstructions[i].maxDuration;
 
 		if (isFresh)
-    {
-      jsonAllInstructions.add((*(jsonInstructions[i])));
-    }
-    else
-    {
-      jsonAllInstructions.set(i, (*(jsonInstructions[i])));
-    }
+		{
+			jsonAllInstructions.add((*(jsonInstructions[i])));
+		}
+		else
+		{
+			jsonAllInstructions.set(i, (*(jsonInstructions[i])));
+		}
 	}
 
 	jsonBombInfoObject["MacAddress"] = strMac;
@@ -371,15 +376,13 @@ void sendBombInfo()
 	jsonBombInfoObject["Instructions"] = jsonAllInstructions;
 
 	constellation.pushStateObject("BombInfo", &jsonBombInfoObject);
-  jsonBombInfoObject.printTo(Serial);
-  Serial.println();
 }
 
 void setup()
 {
 	randomSeed(analogRead(0));
 	Serial.begin(9600);
- constellation.setDebugMode(true);
+	constellation.setDebugMode(true);
 
 	WiFi.macAddress(mac);
 	sprintf(strMac, "%02x:%02x:%02x:%02x:%02x:%02x",
@@ -445,18 +448,97 @@ void setup()
 	totalTime = 3000;
 	resetBomb();
 
-	/*for (int i = 0; i < 10; ++i)
-	  {
-	  pushInstruction(1, BUTTON_DOWN);
-	  pushInstruction(1, BUTTON_UP, 0, 1000);
-	  }
-	*/
-		  pushInstruction(2, BUTTON_DOWN);
-		  pushInstruction(2, BUTTON_UP);
+	// Digital Root
+#if PUZZLE == 1
+	PRESS(2);
 
-		  pushInstruction(5, BUTTON_DOWN);
-		  pushInstruction(5, BUTTON_UP);
+	
+	// ZERO
+#elif PUZZLE == 2
+	
+	PRESS(3);
+	PRESS(3);
+	
+	PRESS(2);
+	PRESS(2);
+	PRESS(2);
 
+	PRESS(1);
+
+	// Not sure!
+	PRESS(0);
+	PRESS(0);
+	PRESS(0);
+
+	
+	// Morse
+#elif PUZZLE == 3
+	// TODO: Add durations.
+#define LONG(index) PRESS(index);
+#define SHORT(index) PRESS(index);
+
+	LONG(3);
+	SHORT(3);
+	LONG(3);
+	SHORT(3);
+
+	SHORT(2);
+	SHORT(2);
+	SHORT(2);
+	SHORT(2);
+
+	SHORT(1);
+	LONG(1);
+
+	LONG(0);
+
+
+	// Emperor
+#elif PUZZLE == 4
+	PRESS(2);
+	
+
+	// guess what?
+#elif PUZZLE == 5
+	PRESS(1);
+	PRESS(3);
+	PRESS(0);
+
+
+	// gray
+#elif PUZZLE == 6
+	pushInstruction(0, BUTTON_DOWN);
+	pushInstruction(1, BUTTON_DOWN);
+	pushInstruction(0, BUTTON_UP);
+	pushInstruction(2, BUTTON_DOWN);
+	pushInstruction(0, BUTTON_DOWN);
+
+
+	// Konami Code
+#elif PUZZLE == 7
+#define LETTER(index) pushInstruction(index, BUTTON_DOWN);	\
+	pushInstruction(index - 1, BUTTON_DOWN);				\
+	pushInstruction(index, BUTTON_UP);						\
+	pushInstruction(index - 1, BUTTON_UP);
+#define UP PRESS(3)
+#define DOWN PRESS(2)
+#define LEFT PRESS(1)
+#define RIGHT PRESS(0)
+#define B LETTER(3);
+#define A LETTER(1);
+	
+	UP;
+	UP;
+	DOWN;
+	DOWN;
+	LEFT;
+	RIGHT;
+	LEFT;
+	RIGHT;
+	B;
+	A;
+#endif
+	
 	constellation.setMessageReceiveCallback(messageReceived);
 	constellation.subscribeToMessage();
 	
