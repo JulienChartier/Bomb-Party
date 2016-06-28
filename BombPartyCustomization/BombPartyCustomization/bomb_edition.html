@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" ng-app="mainApp">
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -19,6 +19,7 @@
 		<!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>-->
 		<script src="Scripts/bootstrap.min.js"></script>
 
+		<script src="enigmes/enigmes.js"></script>
 		<script src="Scripts/bomb_edition.js"></script>
 	</head>
 	<body ng-controller="MyController">
@@ -49,7 +50,8 @@
 		</div>
 		
 		<div ng-show="{{isBomberman}}">
-			<div class="container" role="main" ng-show="connectionState">
+			<p>TODO: Change ng-hide to ng-show!!!</p>
+			<div class="container" role="main" ng-hide="connectionState">
 				<div id="bombEdition" div class="theme-showcase">
 					<div ng-show="selectedBomb.MacAddress == macAddress" id="componentList">
 						<h1 class="alert alert-info text-center">{{editedBomb.MacAddress}}</h1>
@@ -89,10 +91,27 @@
 					</div>
 				</div>
 
-				<div class="panel panel-primary">
+				<div>
+					<input type="radio" ng-model="editedBomb.configType" name="ConfigType" value="Handmade" checked="editedBomb.configType != 'Puzzle'" />Handmade
+					<input type="radio" ng-model="editedBomb.configType" name="ConfigType" value="Puzzle" checked="editedBomb.configType == 'Puzzle'"/>Puzzle
+				</div>
+
+				<div ng-show="{{editedBomb.configType == 'Puzzle'}}" class="panel panel-primary">
+					<div class="panel-heading">
+						<h2 class="panel-title">Puzzle</h2>
+					</div>
+
+					<select ng-model="editedBomb.puzzle" ng-options="'Puzzle ' + (enigme.id + 1) for enigme in enigmes">
+						<option value="">Select a puzzle</option>
+					</select>
+				</div>
+				
+				<div ng-show="{{editedBomb.configType != 'Puzzle'}}" class="panel panel-primary">
 					<div class="panel-heading">
 						<h2 class="panel-title">Instructions <span class="badge">{{editedBomb.Instructions.length}}</span></h2>
 					</div>
+					<button type="button" class="btn btn-lg btn-primary" ng-click="addNewInstruction(0)">+</button>
+					<button type="button" class="btn btn-lg btn-primary" ng-click="removeInstruction(0)">-</button>
 					<div ng-repeat="instruction in editedBomb.Instructions track by $index" id="instructionInfo" class="panel-body">
 						<p>
 							<select ng-model="instruction.ComponentName" ng-options="name for name in allInteractiveComponentNames" ng-change="updateAllInstructionsAfterIndex($index, instruction.ComponentName)"></select>

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" ng-app="mainApp">
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -58,6 +58,7 @@
 							<p>
 								<span class="label label-info">Mac Address: {{macAddress}}</span><br />
 								<span ng-class="{'Activated': 'label label-warning', 'Paused': 'label label-info', 'Idle':'label label-default', 'Exploded': 'label label-danger'}[bomb.State]">State: {{bomb.State}}</span>
+								<span ng-show="{{editedBomb.configType == 'Puzzle'}}">{{editedBomb.puzzle}}<span>
 							</p>
 						</big>
 						<!--<button data-ng-click="selectBomb(bomb)">{{(selectedBomb.MacAddress != macAddress) ? "More" : "Less"}}</button>

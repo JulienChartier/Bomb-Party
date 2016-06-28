@@ -51,6 +51,8 @@
                $scope.getConnectionSettings();
                $scope.connectToConstellation();
 
+			   $scope.enigmes = enigmes;
+
 			   $scope.isBomberman = localStorage.getItem("isBomberman");
 			   
                $scope.editedBomb = JSON.parse(localStorage.getItem("editedBomb"));
@@ -232,7 +234,8 @@
                    localStorage.setItem("editedBomb", JSON.stringify($scope.editedBomb));
 
                    constellation.sendMessage({ Scope: 'Package', Args: ['BombPartyServer'] }, 'ConfigureBomb',
-                                             [$scope.editedBomb.MacAddress, $scope.editedBomb.TimeInMs, $scope.editedBomb.Instructions]);
+                                             [$scope.editedBomb.MacAddress, $scope.editedBomb.TimeInMs, $scope.editedBomb.configType,
+											  $scope.editedBomb.Instructions, $scope,editedBomb.puzzle]);
 
                    window.location = "main.html";
                }
