@@ -405,22 +405,22 @@ void setup()
 	constellation.writeInfo("hello, world!\n");
   
 	// initialisation des boutons et leds
-	NEW_BUTTON(BUTTON_0, 13);
-	NEW_BUTTON(BUTTON_1,10);        
-	NEW_BUTTON(BUTTON_2, 7);
-	NEW_BUTTON(BUTTON_3,4);
+	NEW_BUTTON(BUTTON_0, 10);
+	NEW_BUTTON(BUTTON_1,11);        
+	NEW_BUTTON(BUTTON_2, 12);
+	NEW_BUTTON(BUTTON_3,13);
 
-	NEW_LED(GREEN_0,12,LOW);
-	NEW_LED(RED_0, 11, HIGH);
+	NEW_LED(GREEN_0,3,LOW);
+	NEW_LED(RED_0, 2, HIGH);
         
-	NEW_LED(GREEN_1,9,LOW);
-	NEW_LED(RED_1,8,HIGH);
+	NEW_LED(GREEN_1,5,LOW);
+	NEW_LED(RED_1,4,HIGH);
         
-	NEW_LED(GREEN_2,6,LOW);
-	NEW_LED(RED_2, 5, HIGH);
+	NEW_LED(GREEN_2,7,LOW);
+	NEW_LED(RED_2, 6, HIGH);
         
-	NEW_LED(GREEN_3,3,LOW);
-	NEW_LED(RED_3,2,HIGH);
+	NEW_LED(GREEN_3,9,LOW);
+	NEW_LED(RED_3,8,HIGH);
 
 
 	//give instruction to button
