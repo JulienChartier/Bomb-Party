@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" ng-app="mainApp">
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -38,8 +38,8 @@
 					<ul class="nav navbar-nav">
 						<li><a href="main.html">Bomb</a></li>
 						<li><a href="miscellaneous.html">Miscellaneous</a></li>
-                        <li><a href="options.html">Options</a></li>
                         <li><a href="enigmes/enigmes.html">Puzzles</a></li>
+                        <li><a href="options.html">Options</a></li>
 					</ul>
 				</div>
 			</div>
@@ -50,8 +50,7 @@
 		</div>
 		
 		<div ng-show="{{isBomberman}}">
-			<p>TODO: Change ng-hide to ng-show!!!</p>
-			<div class="container" role="main" ng-hide="connectionState">
+			<div class="container" role="main" ng-show="connectionState">
 				<div id="bombEdition" div class="theme-showcase">
 					<div ng-show="selectedBomb.MacAddress == macAddress" id="componentList">
 						<h1 class="alert alert-info text-center">{{editedBomb.MacAddress}}</h1>
@@ -60,18 +59,20 @@
 								<h2>Components</h2>
 							</div>
 							<div class="panel-body">
-								<table class="table table-striped">
-									<thead>
-										<tr>
-											<th class="label-primary">Interactive</th>
-											<th class="label-info">Decorative</th>
-										</tr>
-									</thead>
-									<tbody>
-										<tr ng-repeat="name in allInteractiveComponentNames" id="componentInfo"><td class="bg-info">{{name}}</td></tr>
-										<tr ng-repeat="name in allDecorativeComponentNames" id="componentInfo"><td>{{name}}</td></tr>
-									</tbody>
-								</table>
+                                <table class="table table-striped" ng-init="components = (allInteractiveComponentNames.length > allDecorativeComponentNames.length) ? allInteractiveComponentNames : allDecorativeComponentNames">
+                                    <thead>
+                                        <tr>
+                                            <th class="label-primary">Interactive</th>
+                                            <th class="label-info">Decorative</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr ng-repeat="component in components">
+                                            <td id="componentInfo">{{allInteractiveComponentNames[$index]}}</td>
+                                            <td id="componentInfo">{{allDecorativeComponentNames[$index]}}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
 							</div>
 						</div>
 					</div>
@@ -91,28 +92,34 @@
 					</div>
 				</div>
 
-				<div>
-					<input type="radio" ng-model="editedBomb.configType" name="ConfigType" value="Handmade" checked="editedBomb.configType != 'Puzzle'" />Handmade
-					<input type="radio" ng-model="editedBomb.configType" name="ConfigType" value="Puzzle" checked="editedBomb.configType == 'Puzzle'"/>Puzzle
+				<div class="radio text-center">
+                    <big>
+                        <label><input type="radio" ng-model="editedBomb.ConfigType" name="ConfigType" value="Handmade" checked="{{editedBomb.ConfigType != 'Handmade'}}" />Handmade</label>
+                        <label><input type="radio" ng-model="editedBomb.ConfigType" name="ConfigType" value="Puzzle" checked="{{editedBomb.ConfigType == 'Puzzle'}}" />Puzzle</label>
+                    </big>
 				</div>
 
-				<div ng-show="{{editedBomb.configType == 'Puzzle'}}" class="panel panel-primary">
+				<div ng-show="editedBomb.ConfigType == 'Puzzle'" class="panel panel-primary">
 					<div class="panel-heading">
 						<h2 class="panel-title">Puzzle</h2>
 					</div>
 
-					<select ng-model="editedBomb.puzzle" ng-options="'Puzzle ' + (enigme.id + 1) for enigme in enigmes">
-						<option value="">Select a puzzle</option>
-					</select>
+                    <div class="panel panel-body">
+                        <select ng-model="editedBomb.Puzzle" ng-options="puzzle for puzzle in allPuzzles">
+                            <option value="">Select a puzzle</option>
+                        </select>
+                    </div>
 				</div>
 				
-				<div ng-show="{{editedBomb.configType != 'Puzzle'}}" class="panel panel-primary">
+				<div ng-show="editedBomb.ConfigType != 'Puzzle'" class="panel panel-primary">
 					<div class="panel-heading">
 						<h2 class="panel-title">Instructions <span class="badge">{{editedBomb.Instructions.length}}</span></h2>
 					</div>
+
 					<button type="button" class="btn btn-lg btn-primary" ng-click="addNewInstruction(0)">+</button>
 					<button type="button" class="btn btn-lg btn-primary" ng-click="removeInstruction(0)">-</button>
-					<div ng-repeat="instruction in editedBomb.Instructions track by $index" id="instructionInfo" class="panel-body">
+
+					<div ng-repeat="instruction in editedBomb.Instructions track by $index" id="instructionInfo" class="panel panel-body">
 						<p>
 							<select ng-model="instruction.ComponentName" ng-options="name for name in allInteractiveComponentNames" ng-change="updateAllInstructionsAfterIndex($index, instruction.ComponentName)"></select>
 							<span ng-show="instruction.ComponentState == 'Up'" class="label label-success">Up</span>

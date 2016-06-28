@@ -18,8 +18,10 @@ namespace Bombi
         private long TotalTimeInMs { get; set; }
         private List<Object> Components { get; set; }
         private List<Object> Instructions { get; set; }
+        private string ConfigType { get; set; }
+        private string Puzzle { get; set; }
 
-        private static string[] allState = { "Idle", "Activated", "Paused", "Exploded" };
+        private static string[] allState = { "Idle", "Activated", "Paused", "Exploded", "Deactivated" };
         private static string ALL_MAC_ADDRESSES = "FF:FF:FF:FF:FF:FF";
 
         static void Main(string[] args)
@@ -43,43 +45,52 @@ namespace Bombi
             this.TimeInMs = this.TotalTimeInMs;
             this.Components = new List<Object>();
             this.Instructions = new List<Object>();
+            this.ConfigType = "Handmade";
+            this.Puzzle = "";
 
-            this.Components.Add(new
+
+            for (int i = 0; i < 4; i++)
             {
-                Name = "Right_Button",
-                Type = "Button",
-                State = "Down"
-            });
-
-            this.Components.Add(new
-            {
-                Name = "Left_Button",
-                Type = "Button",
-                State = "Down"
-            });
-
-            this.Components.Add(new
-            {
-                Name = "Up_Button",
-                Type = "Button",
-                State = "Down"
-            });
-
-            this.Instructions.Add(new
+                this.Components.Add(new
                 {
-                    ComponentName = ((dynamic) this.Components[1]).Name,
-                    ComponentState = ((dynamic)this.Components[1]).State,
-                    MinDuration = 0,
-                    MaxDuration = 0
+                    Name = "Button_" + i,
+                    Type = "Button",
+                    State = "Down"
+                });    
+            }
+
+            for (int i = 0; i < 4; i++)
+            {
+                this.Components.Add(new
+                {
+                    Name = "Green_Led_" + i,
+                    Type = "Led",
+                    State = "Low"
                 });
 
-            this.Instructions.Add(new
-            {
-                ComponentName = ((dynamic) this.Components[0]).Name,
-                ComponentState = ((dynamic)this.Components[0]).State,
-                MinDuration = 1000,
-                MaxDuration = 0
-            });
+                this.Components.Add(new
+                {
+                    Name = "Red_Led_" + i,
+                    Type = "Led",
+                    State = "High"
+                });
+            }
+
+            //this.Instructions.Add(new
+            //    {
+            //        ComponentName = ((dynamic) this.Components[1]).Name,
+            //        ComponentState = ((dynamic)this.Components[1]).State,
+            //        MinDuration = 0,
+            //        MaxDuration = 0
+            //    });
+
+            //this.Instructions.Add(new
+            //{
+            //    ComponentName = ((dynamic) this.Components[0]).Name,
+            //    ComponentState = ((dynamic)this.Components[0]).State,
+            //    MinDuration = 1000,
+            //    MaxDuration = 0
+            //});
 
             Task.Factory.StartNew(() =>
             {
@@ -92,7 +103,9 @@ namespace Bombi
                         State = this.State,
                         TimeInMs = this.TimeInMs,
                         Components = this.Components,
-                        Instructions = this.Instructions
+                        ConfigType = this.ConfigType,
+                        Instructions = this.Instructions,
+                        Puzzle = this.Puzzle
                     });
 
                     Thread.Sleep(1000);
@@ -156,13 +169,19 @@ namespace Bombi
                         this.State = "Idle";
                         break;
                     }
+                case "DeactivateBomb":
+                    {
+                        this.State = "Deactivated";
+                        break;
+                    }
                 case "BombConfiguration":
                     {
                         this.TotalTimeInMs = e.StateObject.DynamicValue.Configuration.TimeInMs;
                         this.TimeInMs = this.TotalTimeInMs;
+                        this.ConfigType = e.StateObject.DynamicValue.Configuration.Type;
                         this.Instructions.Clear();
-
                         this.Instructions.AddRange(e.StateObject.DynamicValue.Configuration.AllInstructions);
+                        this.Puzzle = e.StateObject.DynamicValue.Configuration.Puzzle;
                         break;
                     }
                 default:

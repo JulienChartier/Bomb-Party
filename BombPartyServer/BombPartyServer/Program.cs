@@ -51,9 +51,15 @@ namespace BombPartyServer
         }
 
         [MessageCallback]
-        public void ConfigureBomb(string macAddress, long timeInMs, List<Object> allInstructions)
+        public void DeactivateBomb(string macAddress)
         {
-            this.allBombConfigurations[macAddress] = new BombConfiguration(timeInMs, allInstructions);
+            PackageHost.PushStateObject("DeactivateBomb", new { MacAddress = macAddress });
+        }
+
+        [MessageCallback]
+        public void ConfigureBomb(string macAddress, long timeInMs, string configType, List<Object> allInstructions, string puzzle)
+        {
+            this.allBombConfigurations[macAddress] = new BombConfiguration(timeInMs, configType, allInstructions, puzzle);
 
             PackageHost.PushStateObject("BombConfiguration",
                 new

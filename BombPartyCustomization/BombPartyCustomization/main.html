@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" ng-app="mainApp">
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -35,8 +35,8 @@
 					<ul class="nav navbar-nav">
 						<li class="active"><a href="main.html">Bomb</a></li>
 						<li><a href="miscellaneous.html">Miscellaneous</a></li>
-                        <li><a href="options.html">Options</a></li>
                         <li><a href="enigmes/enigmes.html">Puzzles</a></li>
+                        <li><a href="options.html">Options</a></li>
 					</ul>
 				</div>
 			</div>
@@ -47,36 +47,36 @@
 
 		<div ng-show="connectionState">
 			<div id="bombList" class="container">
-				<div ng-repeat="(macAddress, bomb) in allBombs" id="bombInfo" ng-class="{'Activated': 'panel panel-warning', 'Paused': 'panel panel-info', 'Idle':'panel panel-default', 'Exploded': 'panel panel-danger'}[bomb.State]">
-					<div class="panel-heading text-center">
-						<p ng-hide="bomb.State == 'Exploded'">
-							<h1 id="timer_miaou"><big>{{formatTime(bomb.TimeInMs)}}</big></h1>
-						</p>
-					</div>
-					<div class="panel-body text-center">
-						<big>
-							<p>
-								<span class="label label-info">Mac Address: {{macAddress}}</span><br />
-								<span ng-class="{'Activated': 'label label-warning', 'Paused': 'label label-info', 'Idle':'label label-default', 'Exploded': 'label label-danger'}[bomb.State]">State: {{bomb.State}}</span>
-								<span ng-show="{{editedBomb.configType == 'Puzzle'}}">{{editedBomb.puzzle}}<span>
-							</p>
-						</big>
-						<!--<button data-ng-click="selectBomb(bomb)">{{(selectedBomb.MacAddress != macAddress) ? "More" : "Less"}}</button>
-							<div ng-show="selectedBomb.MacAddress == macAddress" id="componentList">
-								<div ng-repeat="component in selectedBomb.Components" id="componentInfo">
-									<p>{{component.Name}} : {{component.State}}</p>
-								</div>
-							</div>-->
+                <div ng-repeat="(macAddress, bomb) in allBombs" id="bombInfo" ng-class="{'Activated': 'panel panel-warning', 'Paused': 'panel panel-info', 'Idle':'panel panel-default', 'Exploded': 'panel panel-danger', 'Deactivated': 'panel panel-success'}[bomb.State]">
+                    <div class="panel-heading text-center">
+                        <p ng-hide="bomb.State == 'Exploded'">
+                            <h1 id="timer_miaou"><big>{{formatTime(bomb.TimeInMs)}}</big></h1>
+                        </p>
+                    </div>
+                    <div class="panel-body text-center">
+                        <big>
+                            <p>
+                                <span class="label label-info">Mac Address: {{macAddress}}</span><br />
+                                <span ng-class="{'Activated': 'label label-warning', 'Paused': 'label label-info', 'Idle':'label label-default', 'Exploded': 'label label-danger', 'Deactivated': 'label label-success'}[bomb.State]">State: {{bomb.State}}</span><br />
+                                <span class="label label-warning" ng-show="bomb.ConfigType == 'Puzzle'">{{bomb.Puzzle}}</span>
+                            </p>
+                        </big>
+                        <!--<button data-ng-click="selectBomb(bomb)">{{(selectedBomb.MacAddress != macAddress) ? "More" : "Less"}}</button>
+                <div ng-show="selectedBomb.MacAddress == macAddress" id="componentList">
+                    <div ng-repeat="component in selectedBomb.Components" id="componentInfo">
+                        <p>{{component.Name}} : {{component.State}}</p>
+                    </div>
+                </div>-->
 
-						<div ng-show="{{isBomberman}}">
-							<button class="btn btn-lg btn-default" ng-show="bomb.State == 'Idle'" ng-click="activateBomb(bomb)">Activate</button>
-							<button class="btn btn-lg btn-default" ng-show="bomb.State == 'Idle'" ng-click="editBomb(bomb)">Edit</button>
-							<button class="btn btn-lg btn-default" ng-show="bomb.State == 'Activated'" ng-click="pauseBomb(bomb)">Pause</button>
-							<button class="btn btn-lg btn-default" ng-show="bomb.State == 'Paused'" ng-click="resumeBomb(bomb)">Resume</button>
-							<button class="btn btn-lg btn-default" ng-show="(bomb.State == 'Exploded' || bomb.State == 'Paused')" ng-click="resetBomb(bomb)">Reset</button>
-						</div>
-					</div>
-				</div>
+                        <div ng-show="{{isBomberman}}">
+                            <button class="btn btn-lg btn-default" ng-show="bomb.State == 'Idle'" ng-click="activateBomb(bomb)">Activate</button>
+                            <button class="btn btn-lg btn-default" ng-show="bomb.State == 'Idle'" ng-click="editBomb(bomb)">Edit</button>
+                            <button class="btn btn-lg btn-default" ng-show="bomb.State == 'Activated'" ng-click="pauseBomb(bomb)">Pause</button>
+                            <button class="btn btn-lg btn-default" ng-show="bomb.State == 'Paused'" ng-click="resumeBomb(bomb)">Resume</button>
+                            <button class="btn btn-lg btn-default" ng-show="(bomb.State == 'Exploded' || bomb.State == 'Paused' || bomb.State == 'Deactivated')" ng-click="resetBomb(bomb)">Reset</button>
+                        </div>
+                    </div>
+                </div>
 			</div>
 		</div>
 

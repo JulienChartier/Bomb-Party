@@ -62,7 +62,13 @@
 				   return;
 			   }
 			   
-               $scope.allBombComponents = $scope.editedBomb.Components;
+			   $scope.allBombComponents = $scope.editedBomb.Components;
+			   $scope.allPuzzles = [];
+
+			   for (var i = 0; i < enigmes.length; i++)
+			   {
+			       $scope.allPuzzles.push('Puzzle ' + (enigmes[i].id + 1));
+			   }
 
                $scope.formatTime = formatTime;
                var formattedTime = $scope.formatTime($scope.editedBomb.TimeInMs);
@@ -234,14 +240,13 @@
                    localStorage.setItem("editedBomb", JSON.stringify($scope.editedBomb));
 
                    constellation.sendMessage({ Scope: 'Package', Args: ['BombPartyServer'] }, 'ConfigureBomb',
-                                             [$scope.editedBomb.MacAddress, $scope.editedBomb.TimeInMs, $scope.editedBomb.configType,
-											  $scope.editedBomb.Instructions, $scope,editedBomb.puzzle]);
+                                             [$scope.editedBomb.MacAddress, $scope.editedBomb.TimeInMs, $scope.editedBomb.ConfigType,
+											  $scope.editedBomb.Instructions, $scope.editedBomb.Puzzle]);
 
                    window.location = "main.html";
                }
 
-               $scope.resetEditedBomb = function()
-               {
+               $scope.resetEditedBomb = function () {
                    $scope.editedBomb = JSON.parse(localStorage.getItem("editedBomb"));
                    $scope.init();
                }
