@@ -555,8 +555,8 @@ void setup()
 
 void loop()
 {
-  //constellation.pollConstellation(100);
-  //delay(50);
+  constellation.pollConstellation(100);
+  delay(50);
   
   switch (bomb.state)
   {
