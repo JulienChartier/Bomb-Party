@@ -547,8 +547,8 @@ void setup()
   A;
 #endif
   
-  //constellation.setMessageReceiveCallback(messageReceived);
-  //constellation.subscribeToMessage();
+  constellation.setMessageReceiveCallback(messageReceived);
+  constellation.subscribeToMessage();
   
   lastTick = millis();
 }
@@ -685,7 +685,7 @@ void loop()
           break;
       }
 
-      //sendBombInfo();
+      sendBombInfo();
       
       break;
     }
