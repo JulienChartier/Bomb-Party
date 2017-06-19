@@ -1,3 +1,1 @@
-Chat
-kjbkjb
-Oui
+A connected objects game using Constellation
